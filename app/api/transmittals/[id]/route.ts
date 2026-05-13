@@ -43,10 +43,18 @@ export async function PATCH(
 
     const { id } = await ctx.params;
     const body = await request.json();
-    const newProjectName = typeof body.projectName === "string" ? body.projectName.trim() : null;
+    const newProjectName =
+      typeof body.projectName === "string" ? body.projectName.trim() : null;
+    const rawTransmittalNumber =
+      typeof body.transmittalNumber === "string"
+        ? body.transmittalNumber.trim()
+        : null;
 
-    if (!newProjectName) {
-      return NextResponse.json({ error: "projectName is required" }, { status: 400 });
+    if (!newProjectName && rawTransmittalNumber === null) {
+      return NextResponse.json(
+        { error: "At least one of projectName or transmittalNumber is required" },
+        { status: 400 },
+      );
     }
 
     const existing = await db.transmittal.findFirst({
@@ -57,20 +65,55 @@ export async function PATCH(
       return NextResponse.json({ error: "Transmittal not found" }, { status: 404 });
     }
 
-    const updatedProject = {
+    const updateData: Record<string, any> = {};
+    const updatedProject: Record<string, any> = {
       ...((existing.project as object) || {}),
-      projectName: newProjectName,
     };
 
-    await db.transmittal.update({
-      where: { id },
-      data: {
-        projectName: newProjectName,
-        project: updatedProject,
-      },
-    });
+    if (newProjectName !== null) {
+      updateData.projectName = newProjectName;
+      updatedProject.projectName = newProjectName;
+    }
 
-    return NextResponse.json({ ok: true, projectName: newProjectName });
+    if (rawTransmittalNumber !== null) {
+      const dbTransmittalNumber = ensureDbTransmittalPrefix(rawTransmittalNumber);
+
+      if (dbTransmittalNumber) {
+        const duplicate = await db.transmittal.findFirst({
+          where: {
+            userId: session.user.id,
+            transmittalNumber: dbTransmittalNumber,
+            id: { not: id },
+          },
+          select: { id: true },
+        });
+        if (duplicate) {
+          return NextResponse.json(
+            {
+              error: `Transmittal number "${rawTransmittalNumber}" is already in use.`,
+            },
+            { status: 409 },
+          );
+        }
+      }
+
+      updateData.transmittalNumber = dbTransmittalNumber || null;
+      updatedProject.transmittalNumber = dbTransmittalNumber;
+    }
+
+    updateData.project = updatedProject;
+
+    await db.transmittal.update({ where: { id }, data: updateData });
+
+    return NextResponse.json({
+      ok: true,
+      projectName: newProjectName ?? (existing as any).projectName,
+      transmittalNumber: rawTransmittalNumber !== null
+        ? stripTransmittalPrefix(updateData.transmittalNumber ?? "")
+        : stripTransmittalPrefix(
+            String((existing as any).transmittalNumber ?? ""),
+          ),
+    });
   } catch (error: any) {
     console.error("Rename transmittal error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

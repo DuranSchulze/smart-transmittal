@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import * as mammoth from 'mammoth';
 
 // Helper to read file as base64 (used for fast path or fallback)
 const readFileAsBase64 = (file: File): Promise<string> => {
@@ -157,11 +158,22 @@ export const useFileProcessing = <T>(
                 let base64String = "";
                 let mimeType = file.type;
 
-                // Special handling for images in batch too
+                const isDocx =
+                    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                    file.type === 'application/msword' ||
+                    file.name.toLowerCase().endsWith('.docx') ||
+                    file.name.toLowerCase().endsWith('.doc');
+
                 if (file.type.startsWith('image/')) {
-                    // Use robust resizer with optimized settings (800px)
                     base64String = await resizeImage(file, 800);
-                    mimeType = 'image/jpeg'; 
+                    mimeType = 'image/jpeg';
+                } else if (isDocx) {
+                    // Gemini doesn't accept docx binary — extract text via mammoth
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    base64String = result.value.trim();
+                    mimeType = 'text/plain';
+                    if (!base64String) throw new Error('No text could be extracted from the Word document.');
                 } else {
                     base64String = await readFileAsBase64(file);
                 }

@@ -56,9 +56,11 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState("");
+  const [renameProjectName, setRenameProjectName] = useState("");
+  const [renameTransmittalNumber, setRenameTransmittalNumber] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
-  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [renameError, setRenameError] = useState("");
+  const transmittalNumInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -70,8 +72,8 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
 
   useEffect(() => {
     if (renamingId) {
-      renameInputRef.current?.focus();
-      renameInputRef.current?.select();
+      transmittalNumInputRef.current?.focus();
+      transmittalNumInputRef.current?.select();
     }
   }, [renamingId]);
 
@@ -128,37 +130,53 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
   const startRename = (t: TransmittalSummary, e: React.MouseEvent) => {
     e.stopPropagation();
     setRenamingId(t.id);
-    setRenameValue(t.projectName);
+    setRenameProjectName(t.projectName);
+    setRenameTransmittalNumber(t.transmittalNumber);
+    setRenameError("");
   };
 
   const cancelRename = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setRenamingId(null);
-    setRenameValue("");
+    setRenameProjectName("");
+    setRenameTransmittalNumber("");
+    setRenameError("");
   };
 
   const submitRename = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const trimmed = renameValue.trim();
-    if (!trimmed) return;
+    if (!renameProjectName.trim()) return;
     setIsSavingRename(true);
+    setRenameError("");
     try {
       const res = await fetch(`${apiBaseUrl}/api/transmittals/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ projectName: trimmed }),
+        body: JSON.stringify({
+          projectName: renameProjectName.trim(),
+          transmittalNumber: renameTransmittalNumber.trim(),
+        }),
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to rename");
+        throw new Error(err.error || "Failed to save");
       }
+      const result = await res.json();
       setTransmittals((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, projectName: trimmed } : t)),
+        prev.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                projectName: result.projectName,
+                transmittalNumber: result.transmittalNumber,
+              }
+            : t,
+        ),
       );
       setRenamingId(null);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setRenameError(err.message || "Failed to save");
     } finally {
       setIsSavingRename(false);
     }
@@ -299,35 +317,56 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-[11px] font-bold text-slate-800">
-                        {t.transmittalNumber || "—"}
-                      </span>
-                      <span className="text-[10px] text-slate-400">{t.date}</span>
-                    </div>
-
                     {isRenaming ? (
-                      <input
-                        ref={renameInputRef}
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          if (e.key === "Enter") submitRename(t.id);
-                          if (e.key === "Escape") cancelRename();
-                        }}
-                        className="mt-0.5 w-full text-xs text-slate-700 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
-                        placeholder="Project name..."
-                      />
+                      <div className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          ref={transmittalNumInputRef}
+                          value={renameTransmittalNumber}
+                          onChange={(e) => {
+                            setRenameTransmittalNumber(e.target.value);
+                            setRenameError("");
+                          }}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === "Enter") submitRename(t.id);
+                            if (e.key === "Escape") cancelRename();
+                          }}
+                          className="w-full font-mono text-[11px] font-bold text-slate-800 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
+                          placeholder="Transmittal number..."
+                        />
+                        <input
+                          value={renameProjectName}
+                          onChange={(e) => setRenameProjectName(e.target.value)}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === "Enter") submitRename(t.id);
+                            if (e.key === "Escape") cancelRename();
+                          }}
+                          className="w-full text-xs text-slate-700 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
+                          placeholder="Project name..."
+                        />
+                        {renameError && renamingId === t.id && (
+                          <p className="text-[10px] text-red-500">{renameError}</p>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-xs text-slate-600 truncate">{t.projectName}</p>
+                      <>
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-mono text-[11px] font-bold text-slate-800">
+                            {t.transmittalNumber || "—"}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{t.date}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 truncate">{t.projectName}</p>
+                      </>
                     )}
 
-                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                      {t.recipientName || "No recipient"} · {t.itemCount} item
-                      {t.itemCount !== 1 ? "s" : ""}
-                    </p>
+                    {!isRenaming && (
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                        {t.recipientName || "No recipient"} · {t.itemCount} item
+                        {t.itemCount !== 1 ? "s" : ""}
+                      </p>
+                    )}
                   </div>
 
                   <div
@@ -338,7 +377,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                       <>
                         <button
                           onClick={(e) => submitRename(t.id, e)}
-                          disabled={isSavingRename || !renameValue.trim()}
+                          disabled={isSavingRename || !renameProjectName.trim()}
                           className="p-2 rounded-xl text-slate-400 hover:text-green-600 hover:bg-green-50 transition-all disabled:opacity-40"
                           title="Save name"
                         >

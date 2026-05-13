@@ -1497,7 +1497,7 @@ const AppContent: React.FC = () => {
       const result = await parseTransmittalViaApi(apiBaseUrl, {
         content: base64,
         mimeType,
-        isText: false,
+        isText: mimeType === "text/plain",
         fileName,
       });
       const hasParsedItems =
@@ -1533,7 +1533,12 @@ const AppContent: React.FC = () => {
         usedFallback,
       };
     },
-    ["application/pdf", "image/*"],
+    [
+      "application/pdf",
+      "image/*",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/msword",
+    ],
   );
 
   useEffect(() => {
