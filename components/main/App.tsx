@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Pencil, Eye, Loader2 } from "lucide-react";
+import { Pencil, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { TransmittalTemplate } from "../NewReportTemplate";
 import { FloatingAccount } from "../FloatingAccount";
 import { BulkAddModal } from "../modals/BulkAddModal";
@@ -443,6 +443,7 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("content");
   const [isTransmittalListOpen, setIsTransmittalListOpen] = useState(false);
   const [isFileUploadOpen, setIsFileUploadOpen] = useState(false);
+  const [fileUploadInitialFiles, setFileUploadInitialFiles] = useState<File[]>([]);
   const [exportChoiceOpen, setExportChoiceOpen] = useState(false);
   const [exportFolderPickerOpen, setExportFolderPickerOpen] = useState(false);
   const [pendingExportBlob, setPendingExportBlob] = useState<Blob | null>(null);
@@ -458,6 +459,7 @@ const AppContent: React.FC = () => {
     SavedTransmittalRecord[]
   >([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [suggestions, setSuggestions] =
     useState<TransmittalSuggestions>(EMPTY_SUGGESTIONS);
 
@@ -654,7 +656,10 @@ const AppContent: React.FC = () => {
       credentials: "include",
     });
     if (!response.ok) {
-      throw new Error("Failed to fetch transmittals");
+      const errPayload = await response.json().catch(() => ({}));
+      throw new Error(
+        errPayload?.error || `Failed to fetch transmittals (${response.status})`,
+      );
     }
     const payload = await response.json().catch(() => ({}));
     const transmittals = Array.isArray(payload.transmittals)
@@ -740,6 +745,9 @@ const AppContent: React.FC = () => {
     loadTransmittalsFromDb().catch((error) => {
       console.error("Failed to load transmittals", error);
       setSavedTransmittals([]);
+      setStatusMsg(error?.message || "Failed to load transmittals.");
+      setStatusType("error");
+      setTimeout(() => setStatusMsg(""), 6000);
     });
   }, [session?.user?.id, apiBaseUrl]);
 
@@ -2282,95 +2290,115 @@ const AppContent: React.FC = () => {
 
       {/* ─── Sidebar ─── */}
       <div
-        className={`${showPreview ? "hidden" : "flex"} w-full lg:flex lg:w-[420px] bg-white/80 backdrop-blur-xl border-r border-slate-200/60 flex-col h-full shadow-2xl z-20 overflow-hidden absolute inset-0 lg:static`}
+        className={`${showPreview ? "hidden" : "flex"} w-full lg:flex ${sidebarCollapsed ? "lg:w-14" : "lg:w-[420px]"} bg-white/80 backdrop-blur-xl border-r border-slate-200/60 flex-col h-full shadow-2xl z-20 absolute inset-0 lg:relative transition-[width] duration-300 ease-in-out`}
       >
-        <SidebarHeader
-          isDriveReady={isDriveReady}
-          showPreview={showPreview}
-          onTogglePreview={setShowPreview}
-          onStartTour={handleStartTour}
-        />
-
-        <SidebarMenuBar
-          onNewTransmittal={resetForNewAnalysis}
-          onOpenTransmittal={() => setIsTransmittalListOpen(true)}
-          onSaveTransmittal={handleSaveTransmittal}
-          isEditingTransmittal={Boolean(activeTransmittalId)}
-          transmittalNumber={data.project.transmittalNumber}
-          onExportPdf={handlePrint}
-          onExportDocx={handleDownloadDocx}
-          onExportCsv={handleExportCSV}
-          onSendEmail={handleSendEmail}
-          onPreviewDocx={handlePreviewDocx}
-          onOpenAiSettings={() =>
-            window.dispatchEvent(new Event("open-ai-settings"))
-          }
-          onSignOut={handleSignOut}
-          onResetWorkspace={resetForNewAnalysis}
-          isGeneratingPdf={isGeneratingPdf}
-          isGeneratingDocx={isGeneratingDocx}
-        />
-
-        <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-
-        <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
-          {activeTab === "content" && (
-            <ContentTab
-              smartInput={smartInput}
-              onSmartInputChange={setSmartInput}
-              isAnalyzingText={isAnalyzingText}
-              onSmartAnalysis={handleSmartAnalysis}
-              isParsing={isParsing}
-              parseProgress={parseProgress}
-              isDocumentProcessing={isDocumentProcessing}
-              onOpenUploadModal={() => setIsFileUploadOpen(true)}
-              isDriveReady={isDriveReady}
-              onOpenDriveModal={handleOpenDriveModal}
-              transmissionMethod={data.transmissionMethod}
-              onUpdateTransmission={updateTransmission}
-              notes={data.notes}
-              onUpdateNotes={handleUpdateNotes}
-            />
+        {/* Edge collapse toggle — centered on the right border */}
+        <button
+          onClick={() => setSidebarCollapsed((c) => !c)}
+          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 w-5 h-10 items-center justify-center bg-white border border-slate-200 rounded-full shadow-md text-slate-400 hover:text-brand-600 hover:bg-slate-50 transition-colors"
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarCollapsed ? (
+            <ChevronRight className="w-3 h-3" />
+          ) : (
+            <ChevronLeft className="w-3 h-3" />
           )}
+        </button>
 
-          {activeTab === "sender" && (
-            <SenderTab
-              agencies={agencies}
-              selectedAgencyId={selectedAgencyId}
-              onSelectAgency={setSelectedAgencyId}
-              onOpenAgencyModal={openAgencyModal}
-              onDeleteAgency={handleDeleteAgency}
-              sender={data.sender}
-            />
-          )}
+        <div className="overflow-hidden">
+          <SidebarHeader
+            isDriveReady={isDriveReady}
+            showPreview={showPreview}
+            onTogglePreview={setShowPreview}
+            onStartTour={handleStartTour}
+            isCollapsed={sidebarCollapsed}
+          />
+        </div>
 
-          {activeTab === "recipient" && (
-            <RecipientTab
-              recipient={data.recipient}
-              onUpdateField={updateField}
-            />
-          )}
+        <div
+          className={`flex flex-col flex-1 overflow-hidden transition-opacity duration-200 ${sidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        >
+          <SidebarMenuBar
+            onNewTransmittal={resetForNewAnalysis}
+            onOpenTransmittal={() => setIsTransmittalListOpen(true)}
+            onSaveTransmittal={handleSaveTransmittal}
+            isEditingTransmittal={Boolean(activeTransmittalId)}
+            transmittalNumber={data.project.transmittalNumber}
+            onExportPdf={handlePrint}
+            onExportDocx={handleDownloadDocx}
+            onExportCsv={handleExportCSV}
+            onSendEmail={handleSendEmail}
+            onPreviewDocx={handlePreviewDocx}
+            onOpenAiSettings={() =>
+              window.dispatchEvent(new Event("open-ai-settings"))
+            }
+            onSignOut={handleSignOut}
+            onResetWorkspace={resetForNewAnalysis}
+            isGeneratingPdf={isGeneratingPdf}
+            isGeneratingDocx={isGeneratingDocx}
+          />
 
-          {activeTab === "project" && (
-            <ProjectTab
-              project={data.project}
-              onUpdateField={updateField}
-              projectNameSuggestions={suggestions.projectNames}
-              departmentSuggestions={suggestions.departments}
-              transmittalValidation={transmittalNumberValidation}
-            />
-          )}
+          <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {activeTab === "signatories" && (
-            <SignatoriesTab
-              signatories={data.signatories}
-              onUpdateSignatory={handleUpdateSignatory}
-              preparedBySuggestions={suggestions.preparedByNames}
-              preparedByRoleSuggestions={suggestions.preparedByRoles}
-              notedBySuggestions={suggestions.notedByNames}
-              notedByRoleSuggestions={suggestions.notedByRoles}
-            />
-          )}
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
+            {activeTab === "content" && (
+              <ContentTab
+                smartInput={smartInput}
+                onSmartInputChange={setSmartInput}
+                isAnalyzingText={isAnalyzingText}
+                onSmartAnalysis={handleSmartAnalysis}
+                isParsing={isParsing}
+                parseProgress={parseProgress}
+                isDocumentProcessing={isDocumentProcessing}
+                onOpenUploadModal={() => setIsFileUploadOpen(true)}
+                isDriveReady={isDriveReady}
+                onOpenDriveModal={handleOpenDriveModal}
+                transmissionMethod={data.transmissionMethod}
+                onUpdateTransmission={updateTransmission}
+                notes={data.notes}
+                onUpdateNotes={handleUpdateNotes}
+              />
+            )}
+
+            {activeTab === "sender" && (
+              <SenderTab
+                agencies={agencies}
+                selectedAgencyId={selectedAgencyId}
+                onSelectAgency={setSelectedAgencyId}
+                onOpenAgencyModal={openAgencyModal}
+                onDeleteAgency={handleDeleteAgency}
+                sender={data.sender}
+              />
+            )}
+
+            {activeTab === "recipient" && (
+              <RecipientTab
+                recipient={data.recipient}
+                onUpdateField={updateField}
+              />
+            )}
+
+            {activeTab === "project" && (
+              <ProjectTab
+                project={data.project}
+                onUpdateField={updateField}
+                projectNameSuggestions={suggestions.projectNames}
+                departmentSuggestions={suggestions.departments}
+                transmittalValidation={transmittalNumberValidation}
+              />
+            )}
+
+            {activeTab === "signatories" && (
+              <SignatoriesTab
+                signatories={data.signatories}
+                onUpdateSignatory={handleUpdateSignatory}
+                preparedBySuggestions={suggestions.preparedByNames}
+                preparedByRoleSuggestions={suggestions.preparedByRoles}
+                notedBySuggestions={suggestions.notedByNames}
+                notedByRoleSuggestions={suggestions.notedByRoles}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -2419,6 +2447,10 @@ const AppContent: React.FC = () => {
                 onUpdateReceivedBy={handleUpdateReceivedBy}
                 onUpdateFooter={handleUpdateFooter}
                 onUpdateNotes={handleUpdateNotes}
+                onDropFiles={(files) => {
+                  setFileUploadInitialFiles(files);
+                  setIsFileUploadOpen(true);
+                }}
                 isGeneratingPdf={isGeneratingPdf}
                 columnWidths={
                   isGeneratingPdf ? DEFAULT_COLUMN_WIDTHS : columnWidths
@@ -2433,11 +2465,15 @@ const AppContent: React.FC = () => {
       {/* ─── Modals ─── */}
       <FileUploadModal
         isOpen={isFileUploadOpen}
-        onClose={() => setIsFileUploadOpen(false)}
+        onClose={() => {
+          setIsFileUploadOpen(false);
+          setFileUploadInitialFiles([]);
+        }}
         onUploadFiles={handleUploadFiles}
         isDriveReady={isDriveReady}
         isParsing={isParsing}
         parseProgress={parseProgress}
+        initialFiles={fileUploadInitialFiles}
       />
       <TransmittalListModal
         isOpen={isTransmittalListOpen}

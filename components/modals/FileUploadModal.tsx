@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Upload,
   X,
@@ -10,6 +10,7 @@ import {
   Loader2,
   Trash2,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadFileToDrive } from "@/services/googleDriveService";
@@ -22,6 +23,7 @@ interface FileUploadModalProps {
   isDriveReady: boolean;
   isParsing: boolean;
   parseProgress: { current: number; total: number };
+  initialFiles?: File[];
 }
 
 export const FileUploadModal: React.FC<FileUploadModalProps> = ({
@@ -31,6 +33,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
   isDriveReady,
   isParsing,
   parseProgress,
+  initialFiles,
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -40,18 +43,44 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
     "idle" | "uploading" | "done" | "error"
   >("idle");
   const [driveUploadMsg, setDriveUploadMsg] = useState("");
+  const [rejectedNotice, setRejectedNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const acceptedTypes = ["application/pdf", "image/"];
+  const acceptedTypes = [
+    "application/pdf",
+    "image/",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword",
+  ];
 
   const isAccepted = (file: File) =>
     acceptedTypes.some((t) =>
       t.endsWith("/") ? file.type.startsWith(t) : file.type === t,
     );
 
+  useEffect(() => {
+    if (isOpen && initialFiles && initialFiles.length > 0) {
+      const valid = initialFiles.filter(isAccepted);
+      const rejectedCount = initialFiles.length - valid.length;
+      setSelectedFiles(valid);
+      if (rejectedCount > 0) {
+        setRejectedNotice(
+          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF, Word (.doc/.docx), and image files are supported.`,
+        );
+      }
+    }
+  }, [isOpen]);
+
   const addFiles = useCallback(
     (newFiles: File[]) => {
       const valid = newFiles.filter(isAccepted);
+      const rejectedCount = newFiles.length - valid.length;
+      if (rejectedCount > 0) {
+        setRejectedNotice(
+          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF, Word (.doc/.docx), and image files are supported.`,
+        );
+        setTimeout(() => setRejectedNotice(null), 6000);
+      }
       if (valid.length === 0) return;
       setSelectedFiles((prev) => {
         const names = new Set(prev.map((f) => f.name));
@@ -137,12 +166,19 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
     setSaveToDrive(false);
     setDriveUploadStatus("idle");
     setDriveUploadMsg("");
+    setRejectedNotice(null);
     onClose();
   };
 
   const getFileIcon = (file: File) => {
     if (file.type.startsWith("image/"))
       return <ImageIcon className="w-4 h-4 text-purple-400" />;
+    if (
+      file.type === "application/msword" ||
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+      return <FileText className="w-4 h-4 text-sky-500" />;
     return <FileText className="w-4 h-4 text-blue-400" />;
   };
 
@@ -165,7 +201,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 Upload Files
               </h3>
               <p className="text-[10px] text-slate-400 mt-1">
-                PDF documents and images supported
+                PDF, Word (.doc/.docx), and images supported
               </p>
             </div>
             <Button
@@ -215,7 +251,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".pdf,image/*"
+                accept=".pdf,.doc,.docx,image/*"
                 className="hidden"
                 onChange={handleFileInput}
               />
@@ -253,6 +289,22 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Rejected files notice */}
+          {rejectedNotice && (
+            <div className="px-6 mt-3">
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold animate-in fade-in slide-in-from-top-2 duration-300">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{rejectedNotice}</span>
+                <button
+                  onClick={() => setRejectedNotice(null)}
+                  className="ml-auto shrink-0 hover:text-amber-900 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           )}
 

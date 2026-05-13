@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import {
   AppData,
   TransmittalItem,
@@ -26,6 +26,7 @@ interface Props {
   onUpdateReceivedBy?: (field: keyof ReceivedBy, value: string) => void;
   onUpdateFooter?: (field: keyof FooterNotes, value: string) => void;
   onUpdateNotes?: (value: string) => void;
+  onDropFiles?: (files: File[]) => void;
   isGeneratingPdf?: boolean;
   columnWidths: {
     qty: number;
@@ -228,12 +229,15 @@ export const TransmittalTemplate: React.FC<Props> = ({
   onUpdateReceivedBy,
   onUpdateFooter,
   onUpdateNotes,
+  onDropFiles,
   isGeneratingPdf = false,
   columnWidths,
   onResizeDivider,
 }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isFileDraggingOver, setIsFileDraggingOver] = useState(false);
+  const dragCounterRef = useRef(0);
   const handleDragStart = (e: React.DragEvent, index: number) => {
     const target = e.target as HTMLElement;
     if (
@@ -267,6 +271,46 @@ export const TransmittalTemplate: React.FC<Props> = ({
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
+
+  const handleFileDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      if (!onDropFiles || isGeneratingPdf) return;
+      e.preventDefault();
+      dragCounterRef.current += 1;
+      if (e.dataTransfer.types.includes("Files")) {
+        setIsFileDraggingOver(true);
+      }
+    },
+    [onDropFiles, isGeneratingPdf],
+  );
+
+  const handleFileDragLeave = useCallback((e: React.DragEvent) => {
+    if (!onDropFiles || isGeneratingPdf) return;
+    e.preventDefault();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current === 0) {
+      setIsFileDraggingOver(false);
+    }
+  }, [onDropFiles, isGeneratingPdf]);
+
+  const handleFileDragOver = useCallback((e: React.DragEvent) => {
+    if (!onDropFiles || isGeneratingPdf) return;
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+    }
+  }, [onDropFiles, isGeneratingPdf]);
+
+  const handleFileDrop = useCallback(
+    (e: React.DragEvent) => {
+      if (!onDropFiles || isGeneratingPdf) return;
+      e.preventDefault();
+      dragCounterRef.current = 0;
+      setIsFileDraggingOver(false);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) onDropFiles(files);
+    },
+    [onDropFiles, isGeneratingPdf],
+  );
 
   const containerClass = isGeneratingPdf
     ? "bg-white text-slate-800 w-full font-sans relative"
@@ -423,7 +467,34 @@ export const TransmittalTemplate: React.FC<Props> = ({
                 ))}
               </div>
 
-              <div className="mb-8">
+              <div
+                className={`mb-8 relative transition-all duration-200 ${isFileDraggingOver ? "outline outline-2 outline-dashed outline-blue-400 outline-offset-4 rounded-sm" : ""}`}
+                onDragEnter={handleFileDragEnter}
+                onDragLeave={handleFileDragLeave}
+                onDragOver={handleFileDragOver}
+                onDrop={handleFileDrop}
+              >
+                {isFileDraggingOver && (
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-blue-50/90 rounded-sm pointer-events-none">
+                    <div className="flex flex-col items-center gap-2 text-blue-600">
+                      <svg
+                        className="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                        />
+                      </svg>
+                      <span className="text-sm font-bold">Drop files to upload</span>
+                      <span className="text-[10px] font-medium text-blue-500">PDF, Word, or images</span>
+                    </div>
+                  </div>
+                )}
                 <table className="w-full border-collapse border border-slate-300 text-sm table-fixed">
                   <thead>
                     <tr>
@@ -485,8 +556,9 @@ export const TransmittalTemplate: React.FC<Props> = ({
                           colSpan={isGeneratingPdf ? 5 : 6}
                           className="text-center py-10 text-slate-400 italic border border-slate-300 bg-slate-50/30"
                         >
-                          No items listed. Use sidebar to import or add manual
-                          rows.
+                          {isGeneratingPdf
+                            ? "No items listed."
+                            : "No items listed. Drag & drop files here, or use the sidebar to import."}
                         </td>
                       </tr>
                     ) : (

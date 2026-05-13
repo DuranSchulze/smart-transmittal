@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Trash2,
@@ -9,8 +9,10 @@ import {
   CalendarDays,
   X,
   Copy,
+  Pencil,
+  Check,
 } from "lucide-react";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -53,6 +55,11 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [isSavingRename, setIsSavingRename] = useState(false);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (isOpen) {
       fetchTransmittals();
@@ -60,6 +67,13 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
       setDateFilter(undefined);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (renamingId) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [renamingId]);
 
   const fetchTransmittals = async () => {
     setIsLoading(true);
@@ -109,6 +123,45 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
   const handleCopy = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     await onCopyTransmittal(id);
+  };
+
+  const startRename = (t: TransmittalSummary, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRenamingId(t.id);
+    setRenameValue(t.projectName);
+  };
+
+  const cancelRename = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setRenamingId(null);
+    setRenameValue("");
+  };
+
+  const submitRename = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+    setIsSavingRename(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/transmittals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ projectName: trimmed }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to rename");
+      }
+      setTransmittals((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, projectName: trimmed } : t)),
+      );
+      setRenamingId(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSavingRename(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -214,66 +267,129 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               </p>
             </div>
           ) : (
-            filtered.map((t) => (
-              <div
-                key={t.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  onOpenTransmittal(t.id);
-                  onClose();
-                }}
-                onKeyDown={(e) => {
-                  if (e.target !== e.currentTarget) return;
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
+            filtered.map((t) => {
+              const isRenaming = renamingId === t.id;
+              return (
+                <div
+                  key={t.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (isRenaming) return;
                     onOpenTransmittal(t.id);
                     onClose();
-                  }
-                }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-              >
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-brand-50">
-                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-mono text-[11px] font-bold text-slate-800">
-                      {t.transmittalNumber || "—"}
-                    </span>
-                    <span className="text-[10px] text-slate-400">{t.date}</span>
+                  }}
+                  onKeyDown={(e) => {
+                    if (isRenaming) return;
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onOpenTransmittal(t.id);
+                      onClose();
+                    }
+                  }}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                    isRenaming
+                      ? "border-brand-300 bg-brand-50/40 cursor-default"
+                      : "border-slate-100 hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+                  }`}
+                >
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-brand-50">
+                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />
                   </div>
-                  <p className="text-xs text-slate-600 truncate">
-                    {t.projectName}
-                  </p>
-                  <p className="text-[10px] text-slate-400 truncate">
-                    {t.recipientName || "No recipient"} · {t.itemCount} item
-                    {t.itemCount !== 1 ? "s" : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                  <button
-                    onClick={(e) => handleCopy(t.id, e)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
-                    title="Copy transmittal"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => handleDelete(t.id, e)}
-                    disabled={deletingId === t.id}
-                    className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                    title="Delete transmittal"
-                  >
-                    {deletingId === t.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono text-[11px] font-bold text-slate-800">
+                        {t.transmittalNumber || "—"}
+                      </span>
+                      <span className="text-[10px] text-slate-400">{t.date}</span>
+                    </div>
+
+                    {isRenaming ? (
+                      <input
+                        ref={renameInputRef}
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === "Enter") submitRename(t.id);
+                          if (e.key === "Escape") cancelRename();
+                        }}
+                        className="mt-0.5 w-full text-xs text-slate-700 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
+                        placeholder="Project name..."
+                      />
                     ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <p className="text-xs text-slate-600 truncate">{t.projectName}</p>
                     )}
-                  </button>
+
+                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                      {t.recipientName || "No recipient"} · {t.itemCount} item
+                      {t.itemCount !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-1 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {isRenaming ? (
+                      <>
+                        <button
+                          onClick={(e) => submitRename(t.id, e)}
+                          disabled={isSavingRename || !renameValue.trim()}
+                          className="p-2 rounded-xl text-slate-400 hover:text-green-600 hover:bg-green-50 transition-all disabled:opacity-40"
+                          title="Save name"
+                        >
+                          {isSavingRename ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                        <button
+                          onClick={cancelRename}
+                          className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          title="Cancel"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={(e) => startRename(t, e)}
+                          className="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                          title="Rename project"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => handleCopy(t.id, e)}
+                          className="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                          title="Copy transmittal"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(t.id, e)}
+                          disabled={deletingId === t.id}
+                          className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          title="Delete transmittal"
+                        >
+                          {deletingId === t.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

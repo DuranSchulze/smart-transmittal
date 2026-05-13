@@ -28,6 +28,55 @@ const mapTransmittalForApi = (transmittal: any) => {
   };
 };
 
+export async function PATCH(
+  request: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth.api.getSession({
+      headers: request.headers as any,
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { id } = await ctx.params;
+    const body = await request.json();
+    const newProjectName = typeof body.projectName === "string" ? body.projectName.trim() : null;
+
+    if (!newProjectName) {
+      return NextResponse.json({ error: "projectName is required" }, { status: 400 });
+    }
+
+    const existing = await db.transmittal.findFirst({
+      where: { id, userId: session.user.id },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Transmittal not found" }, { status: 404 });
+    }
+
+    const updatedProject = {
+      ...((existing.project as object) || {}),
+      projectName: newProjectName,
+    };
+
+    await db.transmittal.update({
+      where: { id },
+      data: {
+        projectName: newProjectName,
+        project: updatedProject,
+      },
+    });
+
+    return NextResponse.json({ ok: true, projectName: newProjectName });
+  } catch (error: any) {
+    console.error("Rename transmittal error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> },
