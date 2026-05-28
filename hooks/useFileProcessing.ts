@@ -148,11 +148,12 @@ export const useFileProcessing = <T>(
 
     try {
         const successfulResults: T[] = [];
+        const fileErrors: string[] = [];
         // Keep parsing requests sequential to avoid bursting AI API quotas.
         const CONCURRENT_LIMIT = 1;
         const REQUEST_DELAY_MS = 1200;
         const queue = [...validFiles];
-        
+
         const processSingleFile = async (file: File) => {
             try {
                 let base64String = "";
@@ -181,13 +182,15 @@ export const useFileProcessing = <T>(
                 if (!base64String) throw new Error("Empty content");
 
                 const data = await onProcess(base64String, mimeType, file.name);
-                
+
                 if (onItemComplete) {
                     onItemComplete(data);
                 }
                 successfulResults.push(data);
             } catch (err) {
+                const msg = err instanceof Error ? err.message : `Failed to process ${file.name}`;
                 console.error(`Error processing file ${file.name}:`, err);
+                fileErrors.push(msg);
             } finally {
                 if (REQUEST_DELAY_MS > 0 && queue.length > 0) {
                     await sleep(REQUEST_DELAY_MS);
@@ -215,6 +218,10 @@ export const useFileProcessing = <T>(
             if (activeWorkers.length > 0) {
                 await Promise.race(activeWorkers);
             }
+        }
+
+        if (successfulResults.length === 0 && fileErrors.length > 0) {
+            setError(fileErrors[0]);
         }
 
         return successfulResults;

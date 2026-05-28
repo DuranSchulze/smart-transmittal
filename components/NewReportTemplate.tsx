@@ -599,14 +599,14 @@ export const TransmittalTemplate: React.FC<Props> = ({
                                 align="center"
                               />
                             ) : (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center justify-center gap-1">
                                 <button
                                   type="button"
                                   onClick={() => onAdjustItemQty(index, -1)}
-                                  className="w-6 h-6 rounded-full bg-slate-700 text-white text-xs font-black flex items-center justify-center shadow-sm hover:bg-brand-600 transition-colors"
+                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150"
                                   aria-label="Decrease quantity"
                                 >
-                                  -
+                                  −
                                 </button>
                                 <AutoResizeTextArea
                                   value={item.qty}
@@ -619,7 +619,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => onAdjustItemQty(index, 1)}
-                                  className="w-6 h-6 rounded-full bg-slate-700 text-white text-xs font-black flex items-center justify-center shadow-sm hover:bg-brand-600 transition-colors"
+                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150"
                                   aria-label="Increase quantity"
                                 >
                                   +

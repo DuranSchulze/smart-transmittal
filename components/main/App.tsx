@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Pencil, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Eye, Loader2, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, X as XIcon } from "lucide-react";
 import { TransmittalTemplate } from "../NewReportTemplate";
 import { FloatingAccount } from "../FloatingAccount";
 import { BulkAddModal } from "../modals/BulkAddModal";
@@ -31,6 +31,7 @@ import {
   extractSheetIdFromUrl,
 } from "../../services/googleSheetsService";
 import { authClient, signIn, signOut, useSession } from "../../lib/auth-client";
+import { friendlyError } from "../../lib/friendlyError";
 import {
   AppData,
   TransmittalItem,
@@ -745,9 +746,9 @@ const AppContent: React.FC = () => {
     loadTransmittalsFromDb().catch((error) => {
       console.error("Failed to load transmittals", error);
       setSavedTransmittals([]);
-      setStatusMsg(error?.message || "Failed to load transmittals.");
+      setStatusMsg(friendlyError(error, "Couldn't load your saved transmittals."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 6000);
+      setTimeout(() => setStatusMsg(""), 7000);
     });
   }, [session?.user?.id, apiBaseUrl]);
 
@@ -1074,9 +1075,9 @@ const AppContent: React.FC = () => {
       setStatusType("info");
       setTimeout(() => setStatusMsg(""), 3000);
     } catch (e: any) {
-      setStatusMsg(e.message || "Failed to open transmittal");
+      setStatusMsg(friendlyError(e, "Couldn't open that transmittal."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 5000);
+      setTimeout(() => setStatusMsg(""), 7000);
     }
   };
 
@@ -1099,9 +1100,9 @@ const AppContent: React.FC = () => {
       setStatusType("info");
       setTimeout(() => setStatusMsg(""), 4000);
     } catch (error: any) {
-      setStatusMsg(error?.message || "Failed to copy transmittal");
+      setStatusMsg(friendlyError(error, "Couldn't duplicate the transmittal."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 5000);
+      setTimeout(() => setStatusMsg(""), 7000);
     }
   };
 
@@ -1359,9 +1360,9 @@ const AppContent: React.FC = () => {
       setStatusType("info");
       setTimeout(() => setStatusMsg(""), 5000);
     } catch (e: any) {
-      setStatusMsg("Error: " + e.message);
+      setStatusMsg(friendlyError(e, "Couldn't import files from that Drive folder."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 5000);
+      setTimeout(() => setStatusMsg(""), 7000);
       throw e;
     } finally {
       setIsBulkImporting(false);
@@ -1543,9 +1544,9 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (processingError) {
-      setStatusMsg(processingError);
+      setStatusMsg(friendlyError(processingError, "File processing failed."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 5000);
+      setTimeout(() => setStatusMsg(""), 7000);
     }
   }, [processingError]);
 
@@ -1561,9 +1562,9 @@ const AppContent: React.FC = () => {
         logoBase64: `data:image/jpeg;base64,${base64}`,
       }));
     } catch (err: any) {
-      setStatusMsg(`Logo Error: ${err.message}`);
+      setStatusMsg(friendlyError(err, "Couldn't load the logo file."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 3000);
+      setTimeout(() => setStatusMsg(""), 7000);
     } finally {
       e.target.value = "";
     }
@@ -1615,11 +1616,9 @@ const AppContent: React.FC = () => {
       setStatusType("info");
       setTimeout(() => setStatusMsg(""), 3000);
     } catch (error: any) {
-      setStatusMsg(
-        error?.message || "Failed to import logo from Google Drive.",
-      );
+      setStatusMsg(friendlyError(error, "Couldn't import the logo from Google Drive."));
       setStatusType("error");
-      setTimeout(() => setStatusMsg(""), 4000);
+      setTimeout(() => setStatusMsg(""), 7000);
     } finally {
       setIsImportingAgencyDriveLogo(false);
     }
@@ -1753,7 +1752,14 @@ const AppContent: React.FC = () => {
       }
     });
 
-    if (!results || results.length === 0) return;
+    if (!results || results.length === 0) {
+      setStatusMsg(
+        friendlyError(processingError, "Couldn't process the uploaded file(s). Check your AI key settings or try a different file."),
+      );
+      setStatusType("error");
+      setTimeout(() => setStatusMsg(""), 7000);
+      return;
+    }
 
     const addedCount = results.reduce(
       (total, result) =>
@@ -1764,7 +1770,14 @@ const AppContent: React.FC = () => {
       (result) => result?.usedFallback,
     ).length;
 
-    if (addedCount <= 0) return;
+    if (addedCount <= 0) {
+      setStatusMsg(
+        "No items were found in the uploaded file(s). The document may not contain recognizable content.",
+      );
+      setStatusType("error");
+      setTimeout(() => setStatusMsg(""), 7000);
+      return;
+    }
 
     setStatusMsg(
       fallbackCount > 0
@@ -1845,7 +1858,7 @@ const AppContent: React.FC = () => {
       setStatusType("info");
       setIsDriveModalOpen(false);
     } catch (e: any) {
-      setStatusMsg("Error: " + (e?.message || "Failed to import Drive files."));
+      setStatusMsg(friendlyError(e, "Couldn't import files from Google Drive."));
       setStatusType("error");
     } finally {
       setIsDriveSelectionImporting(false);
@@ -1976,11 +1989,11 @@ const AppContent: React.FC = () => {
         setStatusType("info");
       }
     } catch (e: any) {
-      setStatusMsg("Error: " + e.message);
+      setStatusMsg(friendlyError(e, "Smart analysis failed. Check your Drive connection and try again."));
       setStatusType("error");
     } finally {
       setIsAnalyzingText(false);
-      setTimeout(() => setStatusMsg(""), 5000);
+      setTimeout(() => setStatusMsg(""), 7000);
     }
   };
 
@@ -2037,7 +2050,7 @@ const AppContent: React.FC = () => {
         window.open(result.webViewLink, "_blank");
       }
     } catch (err: any) {
-      setStatusMsg(`Upload failed: ${err.message}`);
+      setStatusMsg(friendlyError(err, "Couldn't upload the file to Google Drive."));
       setStatusType("error");
     } finally {
       setIsUploadingToDrive(false);
@@ -2149,7 +2162,7 @@ const AppContent: React.FC = () => {
       setStatusMsg(isEditing ? "Transmittal updated" : "Transmittal saved");
       setStatusType("info");
     } catch (e: any) {
-      setStatusMsg(e.message || "Failed to save transmittal");
+      setStatusMsg(friendlyError(e, "Couldn't save your transmittal."));
       setStatusType("error");
     }
     setTimeout(() => setStatusMsg(""), 5000);
@@ -2259,22 +2272,44 @@ const AppContent: React.FC = () => {
       ) : null}
 
       {statusMsg && !isDocumentProcessing ? (
-        <div className="pointer-events-none fixed right-4 top-5 z-[140] w-[min(92vw,360px)] animate-in slide-in-from-right-5 fade-in duration-300">
+        <div className="pointer-events-auto fixed right-4 top-5 z-[140] w-[min(92vw,380px)] animate-in slide-in-from-right-5 fade-in duration-300">
           <div
-            className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur ${
+            className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-sm flex items-start gap-3 ${
               statusType === "error"
-                ? "border-red-200 bg-red-50/95 text-red-700"
-                : "border-brand-200 bg-white/95 text-slate-700"
+                ? "border-red-200 bg-red-50/95"
+                : "border-emerald-200 bg-white/95"
             }`}
           >
-            <p
-              className={`text-[10px] font-black uppercase tracking-widest ${
-                statusType === "error" ? "text-red-600" : "text-brand-700"
+            <div className="shrink-0 mt-0.5">
+              {statusType === "error" ? (
+                <AlertCircle className="w-4 h-4 text-red-500" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p
+                className={`text-[10px] font-black uppercase tracking-widest ${
+                  statusType === "error" ? "text-red-600" : "text-emerald-700"
+                }`}
+              >
+                {statusType === "error" ? "Something went wrong" : "Done"}
+              </p>
+              <p className={`mt-0.5 text-xs break-words leading-relaxed ${statusType === "error" ? "text-red-700" : "text-slate-600"}`}>
+                {statusMsg}
+              </p>
+            </div>
+            <button
+              onClick={() => setStatusMsg("")}
+              className={`shrink-0 p-1 rounded-lg transition-colors ${
+                statusType === "error"
+                  ? "text-red-400 hover:text-red-600 hover:bg-red-100"
+                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               }`}
+              title="Dismiss"
             >
-              {statusType === "error" ? "Action failed" : "Action complete"}
-            </p>
-            <p className="mt-1 text-xs break-words">{statusMsg}</p>
+              <XIcon className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       ) : null}
