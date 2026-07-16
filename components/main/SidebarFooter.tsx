@@ -36,6 +36,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { AutoSaveIndicator } from "./AutoSaveIndicator";
+import { OPEN_ALL_TRANSMITTALS_ENABLED } from "@/lib/features";
 
 export interface SidebarMenuBarProps {
   onNewTransmittal: () => void;
@@ -145,10 +146,12 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
                 Open Mine...
                 <DropdownMenuShortcut>⌘/Ctrl+O</DropdownMenuShortcut>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onOpenFileLibrary("all")}>
-                <UsersRound className="mr-2 h-4 w-4" />
-                Open All...
-              </DropdownMenuItem>
+              {OPEN_ALL_TRANSMITTALS_ENABLED && (
+                <DropdownMenuItem onClick={() => onOpenFileLibrary("all")}>
+                  <UsersRound className="mr-2 h-4 w-4" />
+                  Open All...
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

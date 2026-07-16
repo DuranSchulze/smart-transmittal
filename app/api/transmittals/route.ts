@@ -9,6 +9,7 @@ import { validateBody } from "@/server/validation"
 import { TransmittalSaveRequestSchema } from "@/lib/validation"
 import type { AppData } from "@/types"
 import { withRouteMetrics } from "@/server/observability"
+import { OPEN_ALL_TRANSMITTALS_ENABLED } from "@/lib/features"
 
 export const runtime = "nodejs"
 export const maxDuration = 15
@@ -22,6 +23,13 @@ async function getHandler(request: Request) {
 
     const searchParams = new URL(request.url).searchParams
     const scope = searchParams.get("scope")
+    if (scope === "all" && !OPEN_ALL_TRANSMITTALS_ENABLED) {
+      return NextResponse.json(
+        { error: "Open All transmittals is temporarily unavailable." },
+        { status: 403 },
+      )
+    }
+
     if (scope === "all" || scope === "mine") {
       const requestedPageSize = Number(searchParams.get("pageSize") || 12)
       const requestedPage = Number(searchParams.get("page") || 1)

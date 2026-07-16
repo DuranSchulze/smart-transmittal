@@ -81,12 +81,12 @@
     "id": "floating-account",
     "targetSelector": "[data-tour=\"floating-account\"]",
     "title": "Account & Settings",
-    "body": "Your account avatar sits in the bottom-right corner. Click it to see your profile and Google Drive connection status. Document actions such as New, Open Mine, Open All, Save, Export, AI Key Settings, and Sign Out are organized inside the File menu."
+    "body": "Your account avatar sits in the bottom-right corner. Click it to see your profile and Google Drive connection status. Document actions such as New, Open Mine, Save, Export, AI Key Settings, and Sign Out are organized inside the File menu."
   },
   {
     "id": "summary",
     "targetSelector": null,
     "title": "You're all set!",
-    "body": "Transmittals auto-save securely and can be reopened from File → Open Mine. Finalized team records are available from File → Open All. The live preview stays visible while you work, and exports support PDF, Word, and CSV."
+    "body": "Transmittals auto-save securely and can be reopened from File → Open Mine. The live preview stays visible while you work, and exports support PDF, Word, and CSV."
   }
 ]

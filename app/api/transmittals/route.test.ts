@@ -47,47 +47,16 @@ describe("GET /api/transmittals file scopes", () => {
     })
   })
 
-  it("uses the read-only all-users summary query for the team library", async () => {
-    mocks.listTransmittalSummaries.mockResolvedValue({
-      transmittals: [{ id: "team" }],
-      pagination: { page: 1, pageSize: 12, total: 1, totalPages: 1 },
-    })
-
+  it("rejects the temporarily disabled all-users library", async () => {
     const response = await GET(
       new Request("http://localhost/api/transmittals?scope=all"),
     )
 
-    expect(response.status).toBe(200)
-    expect(mocks.listTransmittalSummaries).toHaveBeenCalledWith(
-      "user-1",
-      "all",
-      expect.objectContaining({ page: 1, pageSize: 12, status: "all" }),
-    )
-  })
-
-  it("passes pagination, search, owner, and sorting to the summary query", async () => {
-    mocks.listTransmittalSummaries.mockResolvedValue({
-      transmittals: [],
-      pagination: { page: 2, pageSize: 24, total: 0, totalPages: 1 },
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({
+      error: "Open All transmittals is temporarily unavailable.",
     })
-
-    await GET(
-      new Request(
-        "http://localhost/api/transmittals?scope=all&page=2&pageSize=24&search=alpha&owner=alex&sort=owner-asc",
-      ),
-    )
-
-    expect(mocks.listTransmittalSummaries).toHaveBeenCalledWith(
-      "user-1",
-      "all",
-      expect.objectContaining({
-        page: 2,
-        pageSize: 24,
-        search: "alpha",
-        owner: "alex",
-        sort: "owner-asc",
-      }),
-    )
+    expect(mocks.listTransmittalSummaries).not.toHaveBeenCalled()
   })
 
   it("rejects unauthenticated access to both libraries", async () => {

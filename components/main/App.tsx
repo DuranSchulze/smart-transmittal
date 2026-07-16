@@ -23,6 +23,7 @@ import { useExport } from "../../hooks/useExport";
 import { usePreviewControls } from "../../hooks/usePreviewControls";
 import { authClient, signIn, signOut, useSession } from "../../lib/auth-client";
 import { friendlyError } from "../../lib/friendlyError";
+import { OPEN_ALL_TRANSMITTALS_ENABLED } from "../../lib/features";
 import {
   AppData,
   TransmittalItem,
@@ -69,7 +70,11 @@ import {
 import tourStepsRaw from "../../data/onboarding-steps.json";
 import fileMenuItemsRaw from "../../data/file-menu-items.json";
 
-const FILE_MENU_ITEMS: TourStepItem[] = fileMenuItemsRaw as TourStepItem[];
+const FILE_MENU_ITEMS: TourStepItem[] = (
+  fileMenuItemsRaw as TourStepItem[]
+).filter(
+  (item) => OPEN_ALL_TRANSMITTALS_ENABLED || item.id !== "open-all",
+);
 
 const TOUR_STEPS: TourStep[] = (tourStepsRaw as TourStep[]).map((step) =>
   step.id === "file-menu" ? { ...step, items: FILE_MENU_ITEMS } : step,
@@ -708,6 +713,7 @@ const AppContent: React.FC = () => {
         : "Importing selected files from Google Drive...");
 
   const openFileLibrary = useCallback((scope: "mine" | "all") => {
+    if (scope === "all" && !OPEN_ALL_TRANSMITTALS_ENABLED) return;
     setTransmittalListScope(scope);
     setIsTransmittalListOpen(true);
   }, []);

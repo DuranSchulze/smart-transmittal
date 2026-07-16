@@ -3,6 +3,7 @@ import { ensureTransmittalPrefix, stripTransmittalPrefix } from "../lib/utils"
 import { db } from "./auth"
 import { ServiceError, isUniqueConstraintError } from "./service-error"
 import type { Prisma } from "@prisma/client"
+import { OPEN_ALL_TRANSMITTALS_ENABLED } from "../lib/features"
 
 type DatabaseClient = Pick<typeof db, "agency" | "transmittal">
 
@@ -171,7 +172,9 @@ export async function getTransmittalById(id: string, userId: string) {
   const record = await db.transmittal.findFirst({
     where: {
       id,
-      OR: [{ userId }, { isDraft: false }],
+      ...(OPEN_ALL_TRANSMITTALS_ENABLED
+        ? { OR: [{ userId }, { isDraft: false }] }
+        : { userId }),
     },
     include: { items: true, recipients: true, agency: true },
   })
@@ -201,6 +204,14 @@ export async function listTransmittalSummaries(
       | "owner-asc"
   } = {},
 ) {
+  if (scope === "all" && !OPEN_ALL_TRANSMITTALS_ENABLED) {
+    throw new ServiceError(
+      403,
+      "Open All transmittals is temporarily unavailable.",
+      "OPEN_ALL_TRANSMITTALS_DISABLED",
+    )
+  }
+
   const pageSize = Math.min(Math.max(options.pageSize || 12, 1), 48)
   const page = Math.max(options.page || 1, 1)
   const search = options.search?.trim()
