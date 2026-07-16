@@ -8,6 +8,7 @@ import {
 } from "@/server/user-ai-settings";
 
 export const runtime = "nodejs";
+export const maxDuration = 15;
 
 const resolveGeminiModel = (): string => {
   return process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -120,4 +121,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

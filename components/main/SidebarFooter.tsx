@@ -13,6 +13,7 @@ import {
   FilePlus2,
   FolderOpen,
   KeyRound,
+  UsersRound,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,10 +38,15 @@ import {
 
 export interface SidebarMenuBarProps {
   onNewTransmittal: () => void;
-  onOpenTransmittal: () => void;
+  onOpenFileLibrary: (scope: "mine" | "all") => void;
   onSaveTransmittal: () => void;
   isEditingTransmittal?: boolean;
   transmittalNumber?: string;
+  hasUnsavedChanges?: boolean;
+  isSaving?: boolean;
+  lastSavedAt?: Date | null;
+  saveError?: string | null;
+  isDraft?: boolean;
   onExportPdf: () => void;
   onExportDocx: () => void;
   onExportCsv?: () => void;
@@ -55,10 +61,15 @@ export interface SidebarMenuBarProps {
 
 export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
   onNewTransmittal,
-  onOpenTransmittal,
+  onOpenFileLibrary,
   onSaveTransmittal,
   isEditingTransmittal = false,
   transmittalNumber,
+  hasUnsavedChanges = false,
+  isSaving = false,
+  lastSavedAt = null,
+  saveError = null,
+  isDraft = false,
   onExportPdf,
   onExportDocx,
   onExportCsv,
@@ -72,6 +83,18 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const displayTransmittalNumber = transmittalNumber?.trim() || "Draft";
+  const saveIndicator = isSaving
+    ? "Saving…"
+    : saveError
+      ? "Save failed"
+      : hasUnsavedChanges
+        ? "Unsaved changes"
+        : lastSavedAt
+          ? `${isDraft ? "Draft saved" : "Saved"} ${lastSavedAt.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}`
+          : "";
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -84,7 +107,7 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
 
       if (key === "o") {
         event.preventDefault();
-        onOpenTransmittal();
+        onOpenFileLibrary("mine");
         return;
       }
 
@@ -96,11 +119,11 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onOpenTransmittal, onSaveTransmittal]);
+  }, [onOpenFileLibrary, onSaveTransmittal]);
 
   return (
     <>
-      <div className="flex items-center px-6 pt-1 pb-0 gap-1 bg-white/40">
+      <div className="flex h-full min-w-0 flex-1 items-center gap-1 bg-white px-3">
         {/* File menu */}
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -126,10 +149,14 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
                 <FilePlus2 className="mr-2 h-4 w-4" />
                 New Transmittal
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onOpenTransmittal}>
+              <DropdownMenuItem onClick={() => onOpenFileLibrary("mine")}>
                 <FolderOpen className="mr-2 h-4 w-4" />
-                Open...
+                Open Mine...
                 <DropdownMenuShortcut>⌘/Ctrl+O</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenFileLibrary("all")}>
+                <UsersRound className="mr-2 h-4 w-4" />
+                Open All...
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -201,15 +228,25 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="ml-auto">
-          <button
-            onClick={onSignOut}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+        {saveIndicator ? (
+          <span
+            className={`max-w-[170px] truncate text-[10px] font-medium ${
+              saveError
+                ? "text-red-500"
+                : isSaving
+                  ? "animate-pulse text-brand-600"
+                  : hasUnsavedChanges
+                    ? "text-amber-600"
+                    : "text-slate-400"
+            }`}
+            title={saveError || saveIndicator}
+            role="status"
+            aria-live="polite"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            Sign Out
-          </button>
-        </div>
+            {saveIndicator}
+          </span>
+        ) : null}
+
       </div>
 
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>

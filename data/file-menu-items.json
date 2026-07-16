@@ -6,11 +6,17 @@
     "description": "Clears the current form and starts a fresh transmittal. Any unsaved work will be lost, so save first if needed."
   },
   {
-    "id": "open",
+    "id": "open-mine",
     "icon": "FolderOpen",
-    "label": "Open...",
+    "label": "Open Mine...",
     "shortcut": "⌘/Ctrl+O",
-    "description": "Opens a list of your previously saved transmittals so you can reopen and continue editing any of them."
+    "description": "Opens your saved transmittals and drafts so you can continue editing records that belong to you."
+  },
+  {
+    "id": "open-all",
+    "icon": "UsersRound",
+    "label": "Open All...",
+    "description": "Opens finalized transmittals from every user in a read-only, searchable, paginated library."
   },
   {
     "id": "save",

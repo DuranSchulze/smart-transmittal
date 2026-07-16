@@ -1,27 +1,21 @@
 // Google Sheets Service - Appends transmittal rows to a linked spreadsheet
 
 import { getGoogleAccessToken } from "./googleDriveService";
-
-const SHEET_ID_KEY = "transmittal_linked_sheet_id";
+import { storage } from "../lib/storage";
 
 /** Persist the linked spreadsheet ID in localStorage */
 export const setLinkedSheetId = (sheetId: string) => {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(SHEET_ID_KEY, sheetId);
-  }
+  storage.setLinkedSheetId(sheetId);
 };
 
 /** Read the linked spreadsheet ID from localStorage */
 export const getLinkedSheetId = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(SHEET_ID_KEY) || null;
+  return storage.getLinkedSheetId();
 };
 
 /** Clear the linked spreadsheet ID */
 export const clearLinkedSheetId = () => {
-  if (typeof window !== "undefined") {
-    window.localStorage.removeItem(SHEET_ID_KEY);
-  }
+  storage.clearLinkedSheetId();
 };
 
 /** Extract spreadsheet ID from a Google Sheets URL */

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth, db } from "@/server/auth";
+import { withRouteMetrics } from "@/server/observability";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const GOOGLE_PROVIDER_IDS = ["google", "google-dds"] as const;
 type GoogleProviderId = (typeof GOOGLE_PROVIDER_IDS)[number];
@@ -20,7 +22,7 @@ const getProviderCredentials = (providerId: string) => {
   };
 };
 
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers as any,
@@ -145,3 +147,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export const GET = withRouteMetrics("/api/google-token", getHandler);

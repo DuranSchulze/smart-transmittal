@@ -1,11 +1,14 @@
 "use client";
 
+
 import React, { ErrorInfo, ReactNode, Component } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
+  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);
+  resetKey?: string | number;
 }
 
 interface ErrorBoundaryState {
@@ -28,8 +31,27 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     console.error("Uncaught Error:", error, errorInfo);
   }
 
+  componentDidUpdate(previousProps: ErrorBoundaryProps) {
+    if (
+      this.state.hasError &&
+      previousProps.resetKey !== this.props.resetKey
+    ) {
+      this.reset();
+    }
+  }
+
+  private reset = () => {
+    this.setState({ hasError: false, error: null });
+  };
+
   render() {
     if (this.state.hasError) {
+      const fallback = this.props.fallback;
+      if (typeof fallback === "function" && this.state.error) {
+        return fallback(this.state.error, this.reset);
+      }
+      if (fallback && typeof fallback !== "function") return fallback;
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6 font-sans">
           <Card className="max-w-lg w-full text-center border border-slate-200 rounded-3xl shadow-2xl">
@@ -62,11 +84,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </code>
               </div>
               <Button
-                onClick={() => window.location.reload()}
+                onClick={this.reset}
                 className="w-full py-4 rounded-2xl font-bold shadow-xl"
                 size="lg"
               >
-                Reload Workspace
+                Try Again
               </Button>
             </CardContent>
           </Card>

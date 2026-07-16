@@ -5,6 +5,9 @@ import { nextCookies } from "better-auth/next-js";
 import { genericOAuth } from "better-auth/plugins";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { attachDatabasePool } from "@vercel/functions";
+import { Pool } from "pg";
+import { observeDatabaseQuery } from "./observability";
 
 const parseOrigins = (value: string | undefined, fallback: string[]) => {
   const items = String(value || "")
@@ -142,20 +145,48 @@ const exchangeGoogleAuthorizationCode = async ({
   );
 };
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
+const requestedPoolMax = Number.parseInt(process.env.DB_POOL_MAX || "5", 10);
+const poolMax = Number.isFinite(requestedPoolMax)
+  ? Math.min(Math.max(requestedPoolMax, 1), 20)
+  : 5;
 
-export const prisma = new PrismaClient({ adapter });
+const createPool = () =>
+  new Pool({
+    connectionString: process.env.DATABASE_URL!,
+    max: poolMax,
+    connectionTimeoutMillis: 5_000,
+    idleTimeoutMillis: 10_000,
+    allowExitOnIdle: true,
+  });
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: typeof prisma;
+const globalForDatabase = globalThis as unknown as {
+  pool?: Pool;
+  prisma?: ReturnType<typeof createPrismaClient>;
 };
 
-export const db = globalForPrisma.prisma || prisma;
+const pool = globalForDatabase.pool || createPool();
+if (!globalForDatabase.pool) {
+  attachDatabasePool(pool);
+  globalForDatabase.pool = pool;
+}
 
-if (!globalForPrisma.prisma) {
-  globalForPrisma.prisma = db;
+function createPrismaClient() {
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter }).$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ args, query }) {
+          return observeDatabaseQuery(() => query(args));
+        },
+      },
+    },
+  });
+}
+
+export const prisma = globalForDatabase.prisma || createPrismaClient();
+export const db = prisma;
+if (!globalForDatabase.prisma) {
+  globalForDatabase.prisma = prisma;
 }
 
 export const auth = betterAuth({
@@ -164,6 +195,12 @@ export const auth = betterAuth({
     "http://localhost:3000",
   ]),
   database: prismaAdapter(db, { provider: "postgresql" }),
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   plugins: [
     nextCookies(),
     genericOAuth({

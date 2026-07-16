@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth, db } from "@/server/auth";
+import { auth } from "@/server/auth";
+import { generateNextNumber } from "@/server/transmittal-service";
+import { withRouteMetrics } from "@/server/observability";
 
 export const runtime = "nodejs";
-
-const TRANSMITTAL_PREFIX = "TR-FP-";
+export const maxDuration = 15;
 
 /**
  * Generate the next unique transmittal number for the current month.
  * Format: YYYYMM-XXXX (e.g. 202601-0001)
  * The DB stores it with the TR-FP- prefix, but the API returns it without.
  */
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers as any,
@@ -20,35 +21,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const now = new Date();
-    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const prefix = `${TRANSMITTAL_PREFIX}${yearMonth}-`;
-
-    // Find the highest existing number for this month across ALL users
-    // to ensure global uniqueness
-    const existing = await db.transmittal.findMany({
-      where: {
-        transmittalNumber: { startsWith: prefix },
-      },
-      select: { transmittalNumber: true },
+    return NextResponse.json({
+      transmittalNumber: await generateNextNumber(),
     });
-
-    let maxSeq = 0;
-    for (const row of existing) {
-      if (!row.transmittalNumber) continue;
-      const suffix = row.transmittalNumber.slice(prefix.length);
-      const num = Number(suffix);
-      if (!Number.isNaN(num) && num > maxSeq) {
-        maxSeq = num;
-      }
-    }
-
-    const nextSeq = maxSeq + 1;
-    const nextNumber = `${yearMonth}-${String(nextSeq).padStart(4, "0")}`;
-
-    return NextResponse.json({ transmittalNumber: nextNumber });
   } catch (error: any) {
     console.error("Generate next transmittal number error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export const GET = withRouteMetrics(
+  "/api/transmittals/next-number",
+  getHandler,
+);

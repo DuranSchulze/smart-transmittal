@@ -22,6 +22,9 @@ Create an `.env` file in the project root and set the values required for your e
 - `DATABASE_URL`
   - PostgreSQL connection string
   - also used by the Prisma client configuration in `server/auth.ts`
+- `DB_POOL_MAX`
+  - optional maximum PostgreSQL connections per Fluid Compute instance
+  - defaults to `5`; confirm the database connection limit before increasing it
 - `BETTER_AUTH_SECRET`
   - secret used by Better Auth
 - `BETTER_AUTH_URL`
@@ -67,6 +70,7 @@ Optional:
 
 - `SEND_API_TOKEN`
   - required for `GET /api/export-transmittals`
+  - send only in the `x-api-token` header; query-string tokens are rejected
 
 ## Database Setup
 
@@ -81,6 +85,9 @@ Reset the database schema if needed:
 ```bash
 npm run db:reset
 ```
+
+> Never run `db:reset`, `prisma db push --force-reset`, or destructive migrations
+> against production. The Vercel optimization work does not require a migration.
 
 ## Run Locally
 
@@ -109,6 +116,45 @@ Run the production server:
 ```bash
 npm run start
 ```
+
+## Vercel Fluid Compute
+
+- `vercel.json` enables Fluid Compute and pins functions to Singapore (`sin1`).
+- Verify that the production PostgreSQL database is also in Singapore before deployment.
+- Keep a single function region for database-writing routes unless the database is replicated.
+- Normal CRUD routes have a 15-second ceiling, auth and token routes 30 seconds,
+  bulk export 30 seconds, and AI parsing 120 seconds.
+- Better Auth uses a signed five-minute session cookie cache. Session revocation can
+  therefore take up to five minutes to propagate to cached requests.
+
+### Connection Budget Check
+
+Before increasing `DB_POOL_MAX`, verify:
+
+```text
+DB_POOL_MAX × maximum concurrent Fluid instances < database connection limit
+```
+
+Reserve additional database connections for administration, migrations, and monitoring.
+
+## Paginated Export API
+
+Call `GET /api/export-transmittals?limit=100` with `x-api-token`. The response
+contains `rows`, `nextCursor`, `hasMore`, and `exportedTransmittals`. Continue
+requesting with `cursor=<nextCursor>` until `hasMore` is false. Limits must be
+between 1 and 200 transmittals.
+
+## Production Observability Review
+
+Use Vercel Observability → Functions to review invocations, Active CPU,
+provisioned-memory time, p50/p95/p99 duration, cold starts, and errors. Target
+the transmittal list/detail routes, auth session checks, exports, parsing,
+suggestions, agencies, and Google token route.
+
+Sampled `api_request_complete` logs add status, total duration, database query
+count, database time, and response bytes without recording document contents,
+tokens, cookies, personal AI keys, or database URLs. Compare seven days before
+and after deployment.
 
 ## Google Token Flow
 
@@ -178,4 +224,4 @@ http://localhost:3000/api/auth/callback/google-dds
 ### Export API Returns 401
 
 - verify `SEND_API_TOKEN` is configured
-- verify the request supplies the same token in `x-api-token` or the `token` query parameter
+- verify the request supplies the same token in the `x-api-token` header

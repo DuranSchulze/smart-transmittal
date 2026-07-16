@@ -19,7 +19,7 @@ The browser owns the active editing state through `AppData`, but persistence and
   - owns `AppData`
   - restores session state
   - coordinates imports, saves, exports, and modals
-- `components/NewReportTemplate.tsx`
+- `components/transmittal/TransmittalTemplate.tsx`
   - printable transmittal layout
   - editable item table and form sections used by the live preview
 - `lib/auth-client.ts`

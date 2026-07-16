@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth, db } from "@/server/auth";
+import { withRouteMetrics } from "@/server/observability";
 
 export const runtime = "nodejs";
+export const maxDuration = 15;
 
 const MAX_HISTORY_ROWS = 500;
 
@@ -34,7 +36,7 @@ const buildUniqueSuggestions = (
   return items;
 };
 
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers as any,
@@ -71,3 +73,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export const GET = withRouteMetrics(
+  "/api/transmittal-suggestions",
+  getHandler,
+);

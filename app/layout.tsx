@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Script from "next/script";
 import "./globals.css";
 import { Geist } from "next/font/google";
-import { OfflineAlert } from "@/components/OfflineAlert";
+import { OfflineAlert } from "@/components/system/OfflineAlert";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={geist.variable}>
+    <html lang="en" className={geist.variable} suppressHydrationWarning>
       <head>
         {/* Google Tag Manager */}
         <Script
@@ -55,14 +55,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-        <Script
-          src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-          strategy="afterInteractive"
-        />
         <Script
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"

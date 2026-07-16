@@ -4,15 +4,36 @@ const AUTH_SERVER =
   process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
   (typeof window !== "undefined" ? window.location.origin : "");
 
-// Cached access token with expiry
-let cachedAccessToken: string | null = null;
-let cachedTokenExpiry: number = 0;
 const TOKEN_CACHE_MS = 50 * 60 * 1000; // 50 minutes (tokens last ~60 min)
+
+export class DriveTokenManager {
+    private accessToken: string | null = null;
+    private expiresAt = 0;
+
+    getValidToken(): string | null {
+        return this.accessToken && Date.now() < this.expiresAt
+            ? this.accessToken
+            : null;
+    }
+
+    store(accessToken: string): void {
+        this.accessToken = accessToken;
+        this.expiresAt = Date.now() + TOKEN_CACHE_MS;
+    }
+
+    clear(): void {
+        this.accessToken = null;
+        this.expiresAt = 0;
+    }
+}
+
+export const driveTokenManager = new DriveTokenManager();
 
 // Fetch the Google access token from the server (uses session cookie)
 export const getGoogleAccessToken = async (forceRefresh = false): Promise<string> => {
-    if (!forceRefresh && cachedAccessToken && Date.now() < cachedTokenExpiry) {
-        return cachedAccessToken;
+    const cachedToken = driveTokenManager.getValidToken();
+    if (!forceRefresh && cachedToken) {
+        return cachedToken;
     }
     
     const response = await fetch(`${AUTH_SERVER}/api/google-token`, {
@@ -20,22 +41,19 @@ export const getGoogleAccessToken = async (forceRefresh = false): Promise<string
     });
     
     if (!response.ok) {
-        cachedAccessToken = null;
-        cachedTokenExpiry = 0;
+        driveTokenManager.clear();
         const error = await response.json().catch(() => ({}));
         throw new Error(error.error || 'Failed to get Google token');
     }
     
     const data = await response.json();
-    cachedAccessToken = data.accessToken;
-    cachedTokenExpiry = Date.now() + TOKEN_CACHE_MS;
+    driveTokenManager.store(data.accessToken);
     return data.accessToken;
 };
 
 // Clear the cached token (call on logout)
 export const clearGoogleToken = () => {
-    cachedAccessToken = null;
-    cachedTokenExpiry = 0;
+    driveTokenManager.clear();
 };
 
 // Helper: fetch with auto-retry on 401 (refreshes token and retries once)

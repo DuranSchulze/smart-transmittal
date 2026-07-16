@@ -38,7 +38,7 @@ const ExpandingTextarea = ({
 
 interface RecipientTabProps {
   recipient: RecipientInfo;
-  onUpdateField: (section: "recipient", field: string, value: any) => void;
+  onUpdateField: (section: "recipient", field: string, value: string) => void;
 }
 
 export const RecipientTab: React.FC<RecipientTabProps> = ({

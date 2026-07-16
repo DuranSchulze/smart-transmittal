@@ -25,7 +25,7 @@ interface ProjectTabProps {
   project: ProjectInfo;
   projectNameSuggestions: string[];
   departmentSuggestions: string[];
-  onUpdateField: (section: "project", field: string, value: any) => void;
+  onUpdateField: (section: "project", field: string, value: string) => void;
   transmittalValidation: TransmittalValidationState;
 }
 

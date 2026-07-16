@@ -79,14 +79,42 @@ export interface AppData {
   };
 }
 
-export interface HistoryItem {
-  id: string;
-  timestamp: string;
-  transmittalNumber: string;
-  projectName: string;
-  recipientName: string;
-  createdBy: string;
-  preparedBy: string;
-  notedBy: string;
-  data: AppData;
-}
+export type WorkspaceSection =
+  | "files"
+  | "sender"
+  | "project"
+  | "recipient"
+  | "delivery"
+  | "signoff"
+  | "review";
+
+export type WorkspaceProgress = Record<WorkspaceSection, boolean>;
+
+export type DraftAction =
+  | {
+      type: "SET_DATA";
+      data: AppData | ((previous: AppData) => AppData);
+    }
+  | {
+      type: "UPDATE_FIELD";
+      section: keyof AppData;
+      field: string;
+      value: unknown;
+    }
+  | { type: "ADD_ITEMS"; items: TransmittalItem[] }
+  | {
+      type: "UPDATE_ITEM";
+      index: number;
+      field: keyof TransmittalItem;
+      value: string;
+    }
+  | { type: "REMOVE_ITEM"; index: number }
+  | { type: "MOVE_ITEM"; index: number; direction: "up" | "down" }
+  | { type: "REORDER_ITEMS"; fromIndex: number; toIndex: number }
+  | { type: "ADJUST_QTY"; index: number; delta: number }
+  | {
+      type: "UPDATE_TRANSMISSION";
+      method: keyof AppData["transmissionMethod"];
+      checked: boolean;
+    }
+  | { type: "RESET" };

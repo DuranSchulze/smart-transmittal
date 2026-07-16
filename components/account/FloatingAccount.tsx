@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 
+
 interface FloatingAccountProps {
   user: {
     name?: string | null;
@@ -7,14 +8,14 @@ interface FloatingAccountProps {
     image?: string | null;
   };
   apiBaseUrl: string;
-  isDriveReady: boolean;
+  driveAvailability: "unknown" | "ready" | "unavailable";
   onSignOut: () => void;
 }
 
 export const FloatingAccount: React.FC<FloatingAccountProps> = ({
   user,
   apiBaseUrl,
-  isDriveReady,
+  driveAvailability,
   onSignOut,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -167,12 +168,14 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
             <div className="p-5 space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <div
-                  className={`w-2.5 h-2.5 rounded-full ${isDriveReady ? "bg-green-500" : "bg-amber-500"}`}
+                  className={`w-2.5 h-2.5 rounded-full ${driveAvailability === "ready" ? "bg-green-500" : driveAvailability === "unavailable" ? "bg-amber-500" : "bg-slate-400"}`}
                 />
                 <span className="text-slate-600">
-                  {isDriveReady
+                  {driveAvailability === "ready"
                     ? "Google Drive Connected"
-                    : "Drive Not Connected"}
+                    : driveAvailability === "unavailable"
+                      ? "Drive Not Connected"
+                      : "Drive checks when first used"}
                 </span>
               </div>
 

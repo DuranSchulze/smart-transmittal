@@ -1,13 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
+
 import {
   AppData,
   TransmittalItem,
   Signatories,
   ReceivedBy,
   FooterNotes,
-} from "../types";
-import { REMARKS_OPTIONS } from "../services/dropdown";
-import { formatExportText } from "../services/exportText";
+} from "../../types";
+import { REMARKS_OPTIONS } from "../../services/dropdown";
+import { formatExportText } from "../../services/exportText";
 
 interface Props {
   data: AppData;
