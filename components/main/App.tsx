@@ -534,6 +534,20 @@ const AppContent: React.FC = () => {
     setTimeout(() => setStatusMsg(""), 5000);
   };
 
+  const handleRetryAutoSave = async () => {
+    try {
+      await saveNow(
+        { isDraft: true, silent: false },
+        { force: true },
+      );
+      setStatusType("info");
+      setStatusMsg("Draft saved automatically");
+    } catch (error) {
+      setStatusType("error");
+      setStatusMsg(friendlyError(error, "Autosave retry failed."));
+    }
+  };
+
   const handleSendEmail = () => {
     if (!data.recipient.email) {
       setStatusMsg("Add Recipient Email first.");
@@ -762,6 +776,7 @@ const AppContent: React.FC = () => {
           isSaving={isSaving}
           lastSavedAt={lastSavedAt}
           saveError={saveError}
+          onRetryAutoSave={handleRetryAutoSave}
           isDraft={activeTransmittalIsDraft}
           onExportPdf={handlePrint}
           onExportDocx={handleDownloadDocx}

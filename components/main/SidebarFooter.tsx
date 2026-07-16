@@ -35,6 +35,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import { AutoSaveIndicator } from "./AutoSaveIndicator";
 
 export interface SidebarMenuBarProps {
   onNewTransmittal: () => void;
@@ -46,6 +47,7 @@ export interface SidebarMenuBarProps {
   isSaving?: boolean;
   lastSavedAt?: Date | null;
   saveError?: string | null;
+  onRetryAutoSave: () => void;
   isDraft?: boolean;
   onExportPdf: () => void;
   onExportDocx: () => void;
@@ -69,6 +71,7 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
   isSaving = false,
   lastSavedAt = null,
   saveError = null,
+  onRetryAutoSave,
   isDraft = false,
   onExportPdf,
   onExportDocx,
@@ -83,18 +86,6 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const displayTransmittalNumber = transmittalNumber?.trim() || "Draft";
-  const saveIndicator = isSaving
-    ? "Saving…"
-    : saveError
-      ? "Save failed"
-      : hasUnsavedChanges
-        ? "Unsaved changes"
-        : lastSavedAt
-          ? `${isDraft ? "Draft saved" : "Saved"} ${lastSavedAt.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}`
-          : "";
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -228,24 +219,14 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {saveIndicator ? (
-          <span
-            className={`max-w-[170px] truncate text-[10px] font-medium ${
-              saveError
-                ? "text-red-500"
-                : isSaving
-                  ? "animate-pulse text-brand-600"
-                  : hasUnsavedChanges
-                    ? "text-amber-600"
-                    : "text-slate-400"
-            }`}
-            title={saveError || saveIndicator}
-            role="status"
-            aria-live="polite"
-          >
-            {saveIndicator}
-          </span>
-        ) : null}
+        <AutoSaveIndicator
+          hasUnsavedChanges={hasUnsavedChanges}
+          isSaving={isSaving}
+          lastSavedAt={lastSavedAt}
+          saveError={saveError}
+          isDraft={isDraft}
+          onRetry={onRetryAutoSave}
+        />
 
       </div>
 
