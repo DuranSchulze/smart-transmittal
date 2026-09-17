@@ -733,17 +733,17 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-slate-100 font-sans selection:bg-brand-500/20">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-canvas font-sans selection:bg-royal/20">
       {isDocumentProcessing ? (
         <div className="pointer-events-none fixed left-1/2 top-5 z-[130] w-[min(92vw,560px)] -translate-x-1/2">
-          <div className="rounded-2xl border border-brand-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur">
+          <div className="rounded-xl border border-divider bg-white/95 px-4 py-3 shadow-feature backdrop-blur">
             <div className="flex items-start gap-3">
-              <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-brand-600" />
+              <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-royal" />
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-widest text-brand-700">
+                <p className="text-xs font-semibold text-royal">
                   Processing files
                 </p>
-                <p className="mt-1 text-xs text-slate-600 break-words">
+                <p className="mt-1 text-xs text-caption break-words">
                   {documentProcessingStatus}
                 </p>
               </div>
@@ -752,16 +752,16 @@ const AppContent: React.FC = () => {
         </div>
       ) : null}
 
-      <header data-tour="workspace-header" className="z-40 flex h-14 shrink-0 items-center border-b border-slate-200 bg-white shadow-sm">
-        <div className="flex h-full w-[68px] shrink-0 items-center justify-center border-r border-slate-200">
+      <header data-tour="workspace-header" className="z-40 flex h-14 shrink-0 items-center border-b border-divider bg-white shadow-sm">
+        <div className="flex h-full w-[68px] shrink-0 items-center justify-center border-r border-divider">
           <div
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-base font-black text-white shadow-sm"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-royal text-base font-semibold text-white shadow-sm"
             title="Smart Transmittal"
             aria-label="Smart Transmittal"
           >
             T
             <span
-              className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${isDriveReady ? "bg-emerald-500" : "bg-slate-400"}`}
+              className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${isDriveReady ? "bg-mint" : "bg-helper"}`}
               title={
                 driveAvailability === "ready"
                   ? "Drive connected"
@@ -798,7 +798,7 @@ const AppContent: React.FC = () => {
         <button
           type="button"
           onClick={startTour}
-          className="mr-4 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="mr-4 rounded-full p-2 text-helper transition-colors hover:bg-fog hover:text-caption"
           title="Workspace tour"
         >
           <HelpCircle className="h-4 w-4" />
@@ -808,37 +808,37 @@ const AppContent: React.FC = () => {
       {statusMsg && !isDocumentProcessing ? (
         <div className="pointer-events-auto fixed right-4 top-5 z-[140] w-[min(92vw,380px)] animate-in slide-in-from-right-5 fade-in duration-300">
           <div
-            className={`rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-sm flex items-start gap-3 ${
+            className={`rounded-xl border px-4 py-3 shadow-feature backdrop-blur-sm flex items-start gap-3 ${
               statusType === "error"
-                ? "border-red-200 bg-red-50/95"
-                : "border-emerald-200 bg-white/95"
+                ? "border-coral/20 bg-coral/10"
+                : "border-mint/20 bg-white/95"
             }`}
           >
             <div className="shrink-0 mt-0.5">
               {statusType === "error" ? (
-                <AlertCircle className="w-4 h-4 text-red-500" />
+                <AlertCircle className="w-4 h-4 text-coral" />
               ) : (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-mint" />
               )}
             </div>
             <div className="flex-1 min-w-0">
               <p
-                className={`text-[10px] font-black uppercase tracking-widest ${
-                  statusType === "error" ? "text-red-600" : "text-emerald-700"
+                className={`text-xs font-semibold ${
+                  statusType === "error" ? "text-coral" : "text-mint"
                 }`}
               >
                 {statusType === "error" ? "Something went wrong" : "Done"}
               </p>
-              <p className={`mt-0.5 text-xs break-words leading-relaxed ${statusType === "error" ? "text-red-700" : "text-slate-600"}`}>
+              <p className={`mt-0.5 text-xs break-words leading-relaxed ${statusType === "error" ? "text-coral" : "text-caption"}`}>
                 {statusMsg}
               </p>
             </div>
             <button
               onClick={() => setStatusMsg("")}
-              className={`shrink-0 p-1 rounded-lg transition-colors ${
+              className={`shrink-0 p-1 rounded-full transition-colors ${
                 statusType === "error"
-                  ? "text-red-400 hover:text-red-600 hover:bg-red-100"
-                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  ? "text-coral/70 hover:text-coral hover:bg-coral/10"
+                  : "text-helper hover:text-caption hover:bg-fog"
               }`}
               title="Dismiss"
             >
@@ -852,7 +852,7 @@ const AppContent: React.FC = () => {
       <div className="absolute bottom-6 right-6 z-50 flex gap-2 lg:hidden">
         <button
           onClick={() => setShowPreview(!showPreview)}
-          className="w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95"
+          className="w-14 h-14 bg-royal text-white rounded-full shadow-glow flex items-center justify-center hover:bg-cobalt transition-all active:scale-95"
         >
           {showPreview ? (
             <Pencil className="w-6 h-6" />
@@ -862,7 +862,7 @@ const AppContent: React.FC = () => {
         </button>
       </div>
 
-      <aside className={`${showPreview ? "hidden" : "flex"} absolute inset-0 z-20 w-full border-r border-slate-200 bg-white shadow-xl transition-[width] duration-200 ease-out lg:relative lg:flex lg:shadow-none ${isSidebarMinimized ? "lg:w-[68px]" : "lg:w-[460px]"}`}>
+      <aside className={`${showPreview ? "hidden" : "flex"} absolute inset-0 z-20 w-full border-r border-divider bg-white shadow-card transition-[width] duration-200 ease-out lg:relative lg:flex lg:shadow-none ${isSidebarMinimized ? "lg:w-[68px]" : "lg:w-[460px]"}`}>
         <WorkspaceNavigation
           activeSection={activeSection}
           onSectionChange={(section) => {
@@ -873,7 +873,7 @@ const AppContent: React.FC = () => {
           isMinimized={isSidebarMinimized}
           onToggleMinimized={() => setIsSidebarMinimized((current) => !current)}
         />
-        <div className={`min-w-0 flex-1 overflow-y-auto bg-slate-50/60 scrollbar-hide ${isSidebarMinimized ? "block lg:hidden" : "block"}`}>
+        <div className={`min-w-0 flex-1 overflow-y-auto bg-fog/60 scrollbar-hide ${isSidebarMinimized ? "block lg:hidden" : "block"}`}>
             {activeSection === "files" && (
               <FilesPanel
                 items={data.items}
@@ -915,8 +915,8 @@ const AppContent: React.FC = () => {
 
             {activeSection === "project" && (
               <div className="p-6">
-                {suggestionsLoading ? <p className="mb-3 text-xs text-slate-500">Loading saved suggestions…</p> : null}
-                {suggestionsError ? <button type="button" className="mb-3 text-xs font-semibold text-red-600" onClick={() => void loadSuggestions(true)}>Suggestions unavailable. Retry</button> : null}
+                {suggestionsLoading ? <p className="mb-3 text-xs text-helper">Loading saved suggestions…</p> : null}
+                {suggestionsError ? <button type="button" className="mb-3 text-xs font-semibold text-coral" onClick={() => void loadSuggestions(true)}>Suggestions unavailable. Retry</button> : null}
                 <ProjectTab
                 project={data.project}
                 onUpdateField={updateField}
@@ -938,8 +938,8 @@ const AppContent: React.FC = () => {
 
             {activeSection === "signoff" && (
               <div className="p-6">
-                {suggestionsLoading ? <p className="mb-3 text-xs text-slate-500">Loading saved suggestions…</p> : null}
-                {suggestionsError ? <button type="button" className="mb-3 text-xs font-semibold text-red-600" onClick={() => void loadSuggestions(true)}>Suggestions unavailable. Retry</button> : null}
+                {suggestionsLoading ? <p className="mb-3 text-xs text-helper">Loading saved suggestions…</p> : null}
+                {suggestionsError ? <button type="button" className="mb-3 text-xs font-semibold text-coral" onClick={() => void loadSuggestions(true)}>Suggestions unavailable. Retry</button> : null}
                 <SignatoriesTab
                 signatories={data.signatories}
                 onUpdateSignatory={handleUpdateSignatory}

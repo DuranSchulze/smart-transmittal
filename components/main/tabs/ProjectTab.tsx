@@ -38,12 +38,12 @@ export const ProjectTab: React.FC<ProjectTabProps> = ({
 }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h2 className="text-xs font-black text-slate-800 uppercase tracking-[0.2em] mb-4">
+      <h2 className="text-sm font-semibold text-ink mb-4">
         Project Parameters
       </h2>
       <div className="space-y-4">
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Contract/Project Title
           </Label>
           <Combobox
@@ -73,29 +73,29 @@ export const ProjectTab: React.FC<ProjectTabProps> = ({
           </Combobox>
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Project Number
           </Label>
           <Input
-            className="font-mono text-[10px]"
+            className="font-mono text-xs"
             value={project.projectNumber}
             onChange={(e) =>
               onUpdateField("project", "projectNumber", e.target.value)
             }
             placeholder="Enter project reference number"
           />
-          <p className="text-[9px] text-slate-400 ml-2">
+          <p className="text-xs text-helper ml-2">
             Project-specific identifier (separate from Transmittal ID).
           </p>
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Transmittal ID
           </Label>
           <Input
-            className={`font-mono text-[10px] transition-all ${
+            className={`font-mono text-xs transition-all ${
               transmittalValidation.isDuplicate
-                ? "border-red-400 bg-red-50 text-red-700 shadow-[0_0_0_3px_rgba(248,113,113,0.18)] ring-2 ring-red-300/70 focus-visible:ring-red-400"
+                ? "border-coral/20 bg-coral/10 text-coral ring-2 ring-coral/30 focus-visible:ring-coral/40"
                 : ""
             }`}
             value={project.transmittalNumber}
@@ -105,18 +105,18 @@ export const ProjectTab: React.FC<ProjectTabProps> = ({
             placeholder="Auto-generated (e.g. 202602-0001)"
           />
           {transmittalValidation.isDuplicate ? (
-            <p className="text-[9px] text-red-600 ml-2 font-semibold">
+            <p className="text-xs text-coral ml-2 font-medium">
               {transmittalValidation.message}
             </p>
           ) : (
-            <p className="text-[9px] text-slate-400 ml-2">
+            <p className="text-xs text-helper ml-2">
               Auto-generated document number for this transmittal. Editable, but
               must stay unique across all transmittals.
             </p>
           )}
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Purpose
           </Label>
           <Input
@@ -127,7 +127,7 @@ export const ProjectTab: React.FC<ProjectTabProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Department
           </Label>
           <div className="flex gap-2">

@@ -21,14 +21,14 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
   const [statusMsg, setStatusMsg] = useState<string>("");
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider">
+        <div className="p-5 border-b border-divider flex justify-between items-center bg-fog">
           <div>
-            <h3 className="text-2xl font-black text-slate-800 font-display">
+            <h3 className="text-xl font-semibold text-ink">
               Bulk Import
             </h3>
-            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">
+            <p className="text-xs font-medium text-helper mt-1">
               Import from a Google Drive folder
             </p>
           </div>
@@ -36,12 +36,12 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
             onClick={onClose}
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="rounded-full text-helper hover:text-ink"
           >
             ✕
           </Button>
         </div>
-        <div className="p-8">
+        <div className="p-6">
           <div className="space-y-3">
             <Input
               placeholder="Paste Google Drive folder link..."
@@ -49,16 +49,16 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
               onChange={(e) => setDriveLink(e.target.value)}
               autoFocus
             />
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <p className="text-xs font-medium text-helper">
               Imports all files in the folder
             </p>
           </div>
 
           {errorMsg ? (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              <div className="font-bold">Import failed</div>
+            <div className="mt-4 rounded-lg border border-coral/20 bg-coral/10 p-4 text-sm text-coral">
+              <div className="font-medium">Import failed</div>
               <div className="mt-1 break-words">{errorMsg}</div>
-              <div className="mt-2 text-xs text-red-700">
+              <div className="mt-2 text-xs text-coral">
                 Make sure you pasted a folder link (not a file), and that you're
                 signed in with Drive access.
               </div>
@@ -66,16 +66,16 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
           ) : null}
 
           {statusMsg ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            <div className="mt-4 rounded-lg border border-divider bg-fog p-4 text-sm text-caption">
               {statusMsg}
             </div>
           ) : null}
 
-          <div className="mt-8 flex gap-4">
+          <div className="mt-6 flex gap-3">
             <Button
               onClick={onClose}
               variant="ghost"
-              className="flex-1 py-4 rounded-2xl font-bold"
+              className="flex-1 rounded-full font-medium bg-fog text-caption hover:bg-fog/80"
             >
               Cancel
             </Button>
@@ -98,7 +98,7 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
                 }
               }}
               disabled={!driveLink.trim() || isSubmittingDrive}
-              className="flex-[2] py-4 rounded-2xl font-bold shadow-xl"
+              className="flex-[2] rounded-full font-medium shadow-card"
             >
               Import From Drive
             </Button>

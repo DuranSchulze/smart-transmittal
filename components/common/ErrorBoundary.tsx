@@ -53,10 +53,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       if (fallback && typeof fallback !== "function") return fallback;
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6 font-sans">
-          <Card className="max-w-lg w-full text-center border border-slate-200 rounded-3xl shadow-2xl">
-            <CardContent className="p-8">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <div className="min-h-screen flex items-center justify-center bg-canvas p-6 font-sans">
+          <Card className="max-w-lg w-full text-center border border-divider bg-white rounded-2xl shadow-feature">
+            <CardContent className="p-6">
+              <div className="w-20 h-20 bg-coral/10 text-coral rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <svg
                   className="w-10 h-10"
                   fill="none"
@@ -71,21 +71,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   ></path>
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-slate-800 mb-2 font-display">
+              <h2 className="text-2xl font-semibold text-ink mb-2">
                 Dashboard Error
               </h2>
-              <p className="text-slate-500 mb-8 px-4 leading-relaxed">
+              <p className="text-helper mb-8 px-4 leading-relaxed">
                 The application encountered a rendering issue. This is usually
                 temporary.
               </p>
-              <div className="bg-slate-50 p-4 rounded-xl text-left mb-8 overflow-auto max-h-40 border border-slate-100">
-                <code className="text-[10px] text-red-500 font-mono break-all">
+              <div className="bg-fog p-4 rounded-lg text-left mb-8 overflow-auto max-h-40 border border-divider">
+                <code className="text-xs text-coral font-mono break-all">
                   {this.state.error?.message || "Internal Component Error"}
                 </code>
               </div>
               <Button
                 onClick={this.reset}
-                className="w-full py-4 rounded-2xl font-bold shadow-xl"
+                className="w-full py-4 rounded-full font-medium shadow-card"
                 size="lg"
               >
                 Try Again

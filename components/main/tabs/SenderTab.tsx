@@ -71,19 +71,19 @@ export const SenderTab: React.FC<SenderTabProps> = ({
       />
       <div className="space-y-5 p-6">
         {isLoadingAgencies ? (
-          <p className="text-xs text-slate-500">Loading saved agencies…</p>
+          <p className="text-xs text-helper">Loading saved agencies…</p>
         ) : null}
         {agencyLoadError ? (
           <button
             type="button"
             onClick={onRetryAgencies}
-            className="text-xs font-semibold text-red-600"
+            className="text-xs font-medium text-coral"
           >
             Saved agencies are unavailable. Retry
           </button>
         ) : null}
         <div className="space-y-1">
-          <Label className="text-[10px] font-bold text-slate-600">
+          <Label className="text-xs font-medium text-caption">
             Saved Agencies
           </Label>
           <Select
@@ -112,7 +112,7 @@ export const SenderTab: React.FC<SenderTabProps> = ({
             onClick={() =>
               onOpenAgencyModal(hasSelectedAgency ? "update" : "create")
             }
-            className="h-9 flex-1 rounded-xl text-[10px] font-bold"
+            className="h-9 flex-1 rounded-full text-xs font-medium"
           >
             {hasSelectedAgency ? "Update" : "Add"}
           </Button>
@@ -121,7 +121,7 @@ export const SenderTab: React.FC<SenderTabProps> = ({
             <Button
               onClick={() => onOpenAgencyModal("create")}
               variant="outline"
-              className="h-9 flex-1 rounded-xl text-[10px] font-bold"
+              className="h-9 flex-1 rounded-full text-xs font-medium"
             >
               Add New
             </Button>
@@ -131,14 +131,14 @@ export const SenderTab: React.FC<SenderTabProps> = ({
             onClick={onDeleteAgency}
             variant="ghost"
             disabled={!hasSelectedAgency}
-            className="h-9 rounded-xl px-3 text-[10px] font-bold text-red-600 hover:bg-red-50 hover:text-red-700 disabled:text-slate-300"
+            className="h-9 rounded-full px-3 text-xs font-medium text-coral hover:bg-coral/10 disabled:text-helper"
           >
             <Trash2 className="mr-1.5 h-3.5 w-3.5" />
             Delete
           </Button>
         </div>
-        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="flex items-center gap-4 rounded-2xl border border-divider bg-fog p-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-divider bg-white">
             {sender.logoBase64 ? (
               <img
                 src={sender.logoBase64}
@@ -146,25 +146,25 @@ export const SenderTab: React.FC<SenderTabProps> = ({
                 className="h-full w-full object-contain"
               />
             ) : (
-              <Building2 className="h-6 w-6 text-slate-300" />
+              <Building2 className="h-6 w-6 text-helper" />
             )}
           </div>
 
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs font-medium text-helper">
               Current sender
             </p>
-            <p className="mt-1 text-sm font-bold text-slate-800">
+            <p className="mt-1 text-sm font-semibold text-ink">
               {sender.agencyName || "No agency selected"}
             </p>
-            <p className="mt-0.5 text-[10px] text-slate-500">Changes auto-save with this draft.</p>
+            <p className="mt-0.5 text-xs text-helper">Changes auto-save with this draft.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {fields.map(({ key, label, span }) => (
             <div key={key} className={`space-y-1.5 ${span ? "col-span-2" : ""}`}>
-              <Label className="text-[10px] font-bold text-slate-600">{label}</Label>
+              <Label className="text-xs font-medium text-caption">{label}</Label>
               <Input
                 value={sender[key]}
                 onChange={(event) => onUpdateSender(key, event.target.value)}

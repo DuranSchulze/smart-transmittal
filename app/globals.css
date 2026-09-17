@@ -1,5 +1,3 @@
-/* @import "tw-animate-css";
-@import "shadcn/tailwind.css"; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,81 +23,131 @@
 
 @layer base {
   :root {
-    --background: hsl(0, 0%, 100%);
-    --foreground: hsl(0, 0%, 3.9%);
-    --card: hsl(0, 0%, 100%);
-    --card-foreground: hsl(0, 0%, 3.9%);
-    --popover: hsl(0, 0%, 100%);
-    --popover-foreground: hsl(0, 0%, 3.9%);
-    --primary: hsl(0, 0%, 9%);
-    --primary-foreground: hsl(0, 0%, 98%);
-    --secondary: hsl(0, 0%, 96.1%);
-    --secondary-foreground: hsl(0, 0%, 9%);
-    --muted: hsl(0, 0%, 96.1%);
-    --muted-foreground: hsl(0, 0%, 45.1%);
-    --accent: hsl(0, 0%, 96.1%);
-    --accent-foreground: hsl(0, 0%, 9%);
-    --destructive: hsl(0, 84.2%, 60.2%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 89.8%);
-    --input: hsl(0, 0%, 89.8%);
-    --ring: hsl(0, 0%, 63.9%);
-    --chart-1: hsl(220, 70%, 70%);
-    --chart-2: hsl(245, 58%, 51%);
-    --chart-3: hsl(250, 63%, 46%);
-    --chart-4: hsl(255, 66%, 40%);
-    --chart-5: hsl(258, 55%, 34%);
-    --radius: 0.625rem;
-    --sidebar: hsl(0, 0%, 98%);
-    --sidebar-foreground: hsl(0, 0%, 3.9%);
-    --sidebar-primary: hsl(0, 0%, 9%);
-    --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(0, 0%, 96.1%);
-    --sidebar-accent-foreground: hsl(0, 0%, 9%);
-    --sidebar-border: hsl(0, 0%, 89.8%);
-    --sidebar-ring: hsl(0, 0%, 63.9%);
+    /* ---------------------------------------------------------------
+       Relate — design tokens
+       Cool-white canvas, near-black ink, one royal-blue accent.
+       --------------------------------------------------------------- */
+
+    /* Colors */
+    --color-snow-canvas: #fcfcfc;
+    --color-lavender-wash: #f0f4fe;
+    --color-midnight-ink: #020520;
+    --color-graphite-body: #14141e;
+    --color-slate-caption: #374151;
+    --color-ash-helper: #6b7280;
+    --color-stone-divider: #e2e8f0;
+    --color-fog-surface: #f1f5f9;
+    --color-royal-signal: #145aff;
+    --color-cobalt-glow: #3b82f6;
+    --color-mint-win: #16ca2e;
+    --color-coral-lost: #f26052;
+    --color-amber-pending: #ffa64d;
+    --color-azure-focus: #0099ff;
+
+    /* Surfaces */
+    --surface-canvas: #fcfcfc;
+    --surface-wash: #f0f4fe;
+    --surface-card: #ffffff;
+    --surface-frosted: #fcfcfc;
+
+    /* Shadows */
+    --shadow-sm: rgba(0, 0, 0, 0.1) 0px 0px 4px -2px;
+    --shadow-sm-2: rgba(0, 0, 0, 0.25) 0px 0px 4px -2px;
+    --shadow-xl: rgba(20, 90, 255, 0.1) 0px 0px 100px -28px;
+    --shadow-sm-3: rgba(20, 90, 255, 0.3) 0px 0px 4px -2px;
+    --shadow-xl-2: rgba(20, 90, 255, 0.1) 0px 0px 50px -28px, rgba(0, 0, 0, 0.18) 0px 0px 3px -1px;
+
+    /* Layout */
+    --page-max-width: 1200px;
+
+    /* ---------------------------------------------------------------
+       shadcn/ui semantic tokens (mapped to the Relate palette)
+       --------------------------------------------------------------- */
+    --background: #fcfcfc;
+    --foreground: #14141e;
+    --card: #ffffff;
+    --card-foreground: #14141e;
+    --popover: #ffffff;
+    --popover-foreground: #14141e;
+    --primary: #145aff;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #14141e;
+    --muted: #f1f5f9;
+    --muted-foreground: #6b7280;
+    --accent: #f0f4fe;
+    --accent-foreground: #145aff;
+    --destructive: #f26052;
+    --destructive-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #0099ff;
+    --radius: 0.75rem;
+    --chart-1: #145aff;
+    --chart-2: #3b82f6;
+    --chart-3: #16ca2e;
+    --chart-4: #ffa64d;
+    --chart-5: #f26052;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #14141e;
+    --sidebar-primary: #145aff;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f0f4fe;
+    --sidebar-accent-foreground: #145aff;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #0099ff;
   }
+
   .dark {
-    --background: hsl(0, 0%, 3.9%);
-    --foreground: hsl(0, 0%, 98%);
-    --card: hsl(0, 0%, 9%);
-    --card-foreground: hsl(0, 0%, 98%);
-    --popover: hsl(0, 0%, 9%);
-    --popover-foreground: hsl(0, 0%, 98%);
-    --primary: hsl(0, 0%, 83.1%);
-    --primary-foreground: hsl(0, 0%, 9%);
-    --secondary: hsl(0, 0%, 14.9%);
-    --secondary-foreground: hsl(0, 0%, 98%);
-    --muted: hsl(0, 0%, 14.9%);
-    --muted-foreground: hsl(0, 0%, 63.9%);
-    --accent: hsl(0, 0%, 22%);
-    --accent-foreground: hsl(0, 0%, 98%);
-    --destructive: hsl(0, 62.8%, 50.6%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsla(0, 0%, 100%, 0.1);
-    --input: hsla(0, 0%, 100%, 0.15);
-    --ring: hsl(0, 0%, 45.1%);
-    --chart-1: hsl(220, 70%, 70%);
-    --chart-2: hsl(245, 58%, 51%);
-    --chart-3: hsl(250, 63%, 46%);
-    --chart-4: hsl(255, 66%, 40%);
-    --chart-5: hsl(258, 55%, 34%);
-    --sidebar: hsl(0, 0%, 9%);
-    --sidebar-foreground: hsl(0, 0%, 98%);
-    --sidebar-primary: hsl(255, 66%, 40%);
-    --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(0, 0%, 14.9%);
-    --sidebar-accent-foreground: hsl(0, 0%, 98%);
-    --sidebar-border: hsla(0, 0%, 100%, 0.1);
-    --sidebar-ring: hsl(0, 0%, 45.1%);
+    --background: #020520;
+    --foreground: #f1f5f9;
+    --card: #0b1020;
+    --card-foreground: #f1f5f9;
+    --popover: #0b1020;
+    --popover-foreground: #f1f5f9;
+    --primary: #3b82f6;
+    --primary-foreground: #020520;
+    --secondary: #14141e;
+    --secondary-foreground: #f1f5f9;
+    --muted: #14141e;
+    --muted-foreground: #94a3b8;
+    --accent: #14141e;
+    --accent-foreground: #93b4fd;
+    --destructive: #f26052;
+    --destructive-foreground: #020520;
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.15);
+    --ring: #0099ff;
+    --sidebar: #0b1020;
+    --sidebar-foreground: #f1f5f9;
+    --sidebar-primary: #3b82f6;
+    --sidebar-primary-foreground: #020520;
+    --sidebar-accent: #14141e;
+    --sidebar-accent-foreground: #93b4fd;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --sidebar-ring: #0099ff;
   }
+
   .theme {
     --font-sans: var(--font-sans);
   }
+
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply text-ink;
   }
 }

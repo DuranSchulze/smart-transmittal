@@ -34,58 +34,58 @@ export const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-sm rounded-[28px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
-        <div className="p-8 pb-4 text-center">
-          <h3 className="text-xl font-black text-slate-800 font-display">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-sm rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider">
+        <div className="p-6 pb-2 text-center">
+          <h3 className="text-lg font-semibold text-ink">
             Export {formatLabels[format]}
           </h3>
-          <p className="text-xs text-slate-400 mt-2 truncate max-w-[280px] mx-auto">
+          <p className="text-xs text-helper mt-2 truncate max-w-[280px] mx-auto">
             {fileName}
           </p>
         </div>
 
-        <div className="p-6 pt-2 space-y-3">
+        <div className="p-5 pt-2 space-y-3">
           <button
             onClick={onDownloadLocal}
             disabled={isUploading}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-left group"
+            className="w-full flex items-center gap-3 p-3 rounded-lg border border-divider bg-white shadow-card hover:border-royal/20 hover:bg-fog transition-all text-left group"
           >
-            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-blue-50">
-              <Download className="w-4 h-4 text-slate-500 group-hover:text-blue-600" />
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-fog flex items-center justify-center group-hover:bg-wash">
+              <Download className="w-4 h-4 text-helper group-hover:text-royal" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800">Download to device</p>
-              <p className="text-[10px] text-slate-400">Save to your local computer</p>
+              <p className="text-sm font-medium text-ink">Download to device</p>
+              <p className="text-xs text-helper">Save to your local computer</p>
             </div>
           </button>
 
           <button
             onClick={onUploadToDrive}
             disabled={isUploading}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-left group"
+            className="w-full flex items-center gap-3 p-3 rounded-lg border border-divider bg-white shadow-card hover:border-royal/20 hover:bg-fog transition-all text-left group"
           >
-            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-green-50">
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-fog flex items-center justify-center group-hover:bg-mint/10">
               {isUploading ? (
-                <Loader2 className="w-4 h-4 text-green-600 animate-spin" />
+                <Loader2 className="w-4 h-4 text-mint animate-spin" />
               ) : (
-                <Cloud className="w-4 h-4 text-slate-500 group-hover:text-green-600" />
+                <Cloud className="w-4 h-4 text-helper group-hover:text-mint" />
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800">
+              <p className="text-sm font-medium text-ink">
                 {isUploading ? "Uploading..." : "Save to Google Drive"}
               </p>
-              <p className="text-[10px] text-slate-400">Choose a folder in your Drive</p>
+              <p className="text-xs text-helper">Choose a folder in your Drive</p>
             </div>
           </button>
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="px-5 pb-5">
           <Button
             onClick={onClose}
             variant="ghost"
-            className="w-full rounded-xl text-xs text-slate-400"
+            className="w-full rounded-full text-xs font-medium text-helper hover:text-ink"
             disabled={isUploading}
           >
             Cancel

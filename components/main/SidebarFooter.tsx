@@ -120,7 +120,7 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
         <DropdownMenu>
           <DropdownMenuTrigger
             data-tour="file-menu"
-            className="px-3 py-1 rounded-md text-[11px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors outline-none cursor-default"
+            className="px-3 py-1 rounded-full text-xs font-medium text-helper hover:bg-fog hover:text-caption transition-colors outline-none cursor-default"
           >
             File
           </DropdownMenuTrigger>
@@ -131,7 +131,7 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
             className="min-w-[220px]"
           >
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-[10px] font-semibold text-slate-600 normal-case leading-snug">
+              <DropdownMenuLabel className="text-xs font-medium text-caption normal-case leading-snug">
                 What do you want to do for {displayTransmittalNumber} Document?
               </DropdownMenuLabel>
             </DropdownMenuGroup>
@@ -242,7 +242,10 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowResetDialog(false)}>
+            <AlertDialogCancel
+              onClick={() => setShowResetDialog(false)}
+              className="rounded-full border-divider text-caption hover:bg-fog text-sm font-medium"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -250,6 +253,7 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
                 setShowResetDialog(false);
                 onResetWorkspace();
               }}
+              className="rounded-full bg-royal text-white hover:bg-royal/90 text-sm font-medium"
             >
               Reset Form
             </AlertDialogAction>

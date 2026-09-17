@@ -46,7 +46,7 @@ export function WorkspaceNavigation({
   return (
     <nav
       aria-label="Transmittal workspace"
-      className={`flex shrink-0 flex-col border-r border-slate-800 bg-slate-950 px-2 py-3 transition-[width] duration-200 ease-out ${
+      className={`flex shrink-0 flex-col border-r border-divider bg-white px-2 py-3 transition-[width] duration-200 ease-out ${
         isMinimized ? "w-[68px]" : "w-[84px]"
       }`}
     >
@@ -62,14 +62,14 @@ export function WorkspaceNavigation({
               aria-label={label}
               title={isMinimized ? label : undefined}
               onClick={() => onSectionChange(key)}
-              className={`group relative flex w-full items-center justify-center rounded-xl text-[9px] font-bold tracking-wide transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97] ${
+              className={`group relative flex w-full items-center justify-center rounded-xl text-xs font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97] ${
                 isMinimized
                   ? "h-11"
                   : "min-h-[58px] flex-col gap-1 px-1.5"
               } ${
                 active
-                  ? "bg-white text-slate-950 shadow-lg shadow-black/20"
-                  : "text-slate-400 hover:bg-white/10 hover:text-white"
+                  ? "bg-wash text-royal shadow-card"
+                  : "text-helper hover:bg-fog hover:text-caption"
               }`}
             >
               <Icon className="h-[19px] w-[19px] shrink-0" strokeWidth={active ? 2.3 : 1.8} />
@@ -81,7 +81,7 @@ export function WorkspaceNavigation({
                       ? "right-1.5 top-1.5 h-2 w-2"
                       : "right-1.5 top-1.5 h-3.5 w-3.5"
                   } ${
-                    active ? "bg-emerald-500 text-white" : "bg-emerald-400 text-slate-950"
+                    active ? "bg-mint text-white" : "bg-mint/15 text-mint"
                   }`}
                   aria-hidden="true"
                   title={`${label} complete`}
@@ -98,7 +98,7 @@ export function WorkspaceNavigation({
         <button
           type="button"
           onClick={onToggleMinimized}
-          className="mt-3 hidden h-10 w-full shrink-0 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition-colors hover:bg-white/10 hover:text-white lg:flex"
+          className="mt-3 hidden h-10 w-full shrink-0 items-center justify-center rounded-xl border border-divider text-helper transition-colors hover:bg-fog lg:flex"
           aria-label={isMinimized ? "Expand sidebar" : "Minimize sidebar"}
           title={isMinimized ? "Expand sidebar" : "Minimize sidebar"}
         >

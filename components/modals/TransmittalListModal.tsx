@@ -267,15 +267,15 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="flex h-[calc(100vh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-white bg-white shadow-2xl animate-in zoom-in-95 duration-300">
-        <div className="p-8 pb-4 border-b border-slate-100 bg-slate-50/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="flex h-[calc(100vh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-divider bg-white shadow-feature animate-in zoom-in-95 duration-300">
+        <div className="p-6 pb-4 border-b border-divider bg-fog">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-2xl font-black text-slate-800 font-display">
+              <h3 className="text-xl font-semibold text-ink">
                 {scope === "mine" ? "My Files" : "All Users’ Files"}
               </h3>
-              <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">
+              <p className="text-xs font-medium text-helper mt-1">
                 {total} {scope === "mine" ? "personal" : "team"} document
                 {total !== 1 ? "s" : ""}
               </p>
@@ -284,7 +284,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               onClick={onClose}
               variant="ghost"
               size="icon"
-              className="rounded-full"
+              className="rounded-full text-helper hover:text-ink"
             >
               ✕
             </Button>
@@ -308,7 +308,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                   setStatusFilter(event.target.value as "all" | "draft" | "final");
                   setPage(1);
                 }}
-                className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className="h-9 rounded-xl border border-divider bg-white px-3 text-xs font-medium text-caption outline-none focus:border-royal/40 focus:ring-2 focus:ring-royal/10"
                 aria-label="Filter by status"
               >
                 <option value="all">All statuses</option>
@@ -331,8 +331,8 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`rounded-xl w-[160px] justify-start text-left text-xs font-normal gap-2 ${
-                    !dateFilter ? "text-muted-foreground" : ""
+                  className={`rounded-full w-[160px] justify-start text-left text-xs font-normal gap-2 ${
+                    !dateFilter ? "text-helper" : ""
                   }`}
                 >
                   <CalendarDays className="w-3.5 h-3.5" />
@@ -358,7 +358,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl h-9 w-9 shrink-0"
+                className="rounded-full h-9 w-9 shrink-0"
                 onClick={() => {
                   setDateFilter(undefined);
                   setPage(1);
@@ -373,7 +373,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                 setSort(event.target.value);
                 setPage(1);
               }}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              className="h-9 rounded-xl border border-divider bg-white px-3 text-xs font-medium text-caption outline-none focus:border-royal/40 focus:ring-2 focus:ring-royal/10"
               aria-label="Sort files"
             >
               <option value="updated-desc">Recently updated</option>
@@ -385,14 +385,14 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                 <option value="owner-asc">Creator A–Z</option>
               )}
             </select>
-            <div className="flex h-9 items-center rounded-xl border border-slate-200 bg-white p-1">
+            <div className="flex h-9 items-center rounded-full border border-divider bg-white p-1">
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className={`flex h-7 w-8 items-center justify-center rounded-lg transition-colors ${
+                className={`flex h-7 w-8 items-center justify-center rounded-full transition-colors ${
                   viewMode === "list"
-                    ? "bg-slate-950 text-white"
-                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    ? "bg-royal text-white"
+                    : "text-helper hover:bg-fog hover:text-caption"
                 }`}
                 aria-label="List view"
                 aria-pressed={viewMode === "list"}
@@ -402,10 +402,10 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
-                className={`flex h-7 w-8 items-center justify-center rounded-lg transition-colors ${
+                className={`flex h-7 w-8 items-center justify-center rounded-full transition-colors ${
                   viewMode === "grid"
-                    ? "bg-slate-950 text-white"
-                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    ? "bg-royal text-white"
+                    : "text-helper hover:bg-fog hover:text-caption"
                 }`}
                 aria-label="Grid view"
                 aria-pressed={viewMode === "grid"}
@@ -418,12 +418,12 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
 
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12 text-slate-400">
+            <div className="flex items-center justify-center py-12 text-helper">
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
               <span className="text-sm font-medium">Loading...</span>
             </div>
           ) : transmittals.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-12 text-helper">
               <FolderOpen className="w-8 h-8 mb-2" />
               <p className="text-sm font-medium">
                 {search || dateFilter || statusFilter !== "all" || ownerFilter
@@ -461,20 +461,20 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                       onClose();
                     }
                   }}
-                  className={`group flex w-full gap-4 rounded-2xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                  className={`group flex w-full gap-3 rounded-lg border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal/40 ${
                     viewMode === "grid"
                       ? "min-h-[180px] flex-col items-stretch"
                       : "items-center"
                   } ${
                     isRenaming
-                      ? "border-brand-300 bg-brand-50/40 cursor-default"
+                      ? "border-royal/40 bg-wash cursor-default"
                       : canManage
-                        ? "border-slate-100 hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
-                        : "border-slate-100 bg-white cursor-default"
+                        ? "border-divider bg-white shadow-card hover:border-royal/20 hover:bg-fog cursor-pointer"
+                        : "border-divider bg-white shadow-card cursor-default"
                   }`}
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-brand-50">
-                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-fog flex items-center justify-center group-hover:bg-wash">
+                    <FileText className="w-4 h-4 text-helper group-hover:text-royal" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -492,7 +492,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                             if (e.key === "Enter") submitRename(t.id);
                             if (e.key === "Escape") cancelRename();
                           }}
-                          className="w-full font-mono text-[11px] font-bold text-slate-800 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
+                          className="w-full font-mono text-xs font-medium text-ink bg-white border border-royal/40 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-royal/20"
                           placeholder="Transmittal number..."
                         />
                         <input
@@ -503,29 +503,29 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                             if (e.key === "Enter") submitRename(t.id);
                             if (e.key === "Escape") cancelRename();
                           }}
-                          className="w-full text-xs text-slate-700 bg-white border border-brand-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-brand-400"
+                          className="w-full text-xs text-caption bg-white border border-royal/40 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-royal/20"
                           placeholder="Project name..."
                         />
                         {renameError && renamingId === t.id && (
-                          <p className="text-[10px] text-red-500">{renameError}</p>
+                          <p className="text-xs text-coral">{renameError}</p>
                         )}
                       </div>
                     ) : (
                       <>
                         <div className="flex items-baseline gap-2">
-                          <span className="font-mono text-[11px] font-bold text-slate-800">
+                          <span className="font-mono text-xs font-semibold text-ink">
                             {t.transmittalNumber || "—"}
                           </span>
                           {t.isDraft ? (
-                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                               Draft
                             </span>
                           ) : null}
-                          <span className="text-[10px] text-slate-400">{t.date}</span>
+                          <span className="text-xs text-helper">{t.date}</span>
                         </div>
-                        <p className="text-xs text-slate-600 truncate">{t.projectName}</p>
+                        <p className="text-xs text-caption truncate">{t.projectName}</p>
                         {scope === "all" ? (
-                          <p className="mt-0.5 text-[10px] font-medium text-violet-600">
+                          <p className="mt-0.5 text-xs font-medium text-cobalt">
                             Created by {t.ownerName}
                           </p>
                         ) : null}
@@ -533,7 +533,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                     )}
 
                     {!isRenaming && (
-                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                      <p className="text-xs text-helper truncate mt-0.5">
                         {t.recipientName || "No recipient"} · {t.itemCount} item
                         {t.itemCount !== 1 ? "s" : ""}
                       </p>
@@ -549,7 +549,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                         <button
                           onClick={(e) => submitRename(t.id, e)}
                           disabled={isSavingRename || !renameProjectName.trim()}
-                          className="p-2 rounded-xl text-slate-400 hover:text-green-600 hover:bg-green-50 transition-all disabled:opacity-40"
+                          className="p-2 rounded-full text-helper hover:text-mint hover:bg-mint/10 transition-all disabled:opacity-40"
                           title="Save name"
                         >
                           {isSavingRename ? (
@@ -560,7 +560,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                         </button>
                         <button
                           onClick={cancelRename}
-                          className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          className="p-2 rounded-full text-helper hover:text-coral hover:bg-coral/10 transition-all"
                           title="Cancel"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -570,14 +570,14 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                         <button
                           onClick={(e) => startRename(t, e)}
-                          className="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                          className="p-2 rounded-full text-helper hover:text-royal hover:bg-wash transition-all"
                           title="Rename project"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={(e) => handleCopy(t.id, e)}
-                          className="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                          className="p-2 rounded-full text-helper hover:text-royal hover:bg-wash transition-all"
                           title="Copy transmittal"
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -585,7 +585,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                         <button
                           onClick={(e) => handleDelete(t.id, e)}
                           disabled={deletingId === t.id}
-                          className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          className="p-2 rounded-full text-helper hover:text-coral hover:bg-coral/10 transition-all"
                           title="Delete transmittal"
                         >
                           {deletingId === t.id ? (
@@ -604,8 +604,8 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white px-6 py-3">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider bg-white px-6 py-3">
+          <div className="flex items-center gap-2 text-xs text-helper">
             <span>
               {total === 0
                 ? "No results"
@@ -617,7 +617,7 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
                 setPageSize(Number(event.target.value));
                 setPage(1);
               }}
-              className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs outline-none"
+              className="h-8 rounded-xl border border-divider bg-white px-2 text-xs outline-none"
               aria-label="Files per page"
             >
               <option value={12}>12 per page</option>
@@ -630,21 +630,21 @@ export const TransmittalListModal: React.FC<TransmittalListModalProps> = ({
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-full"
               disabled={page <= 1 || isLoading}
               onClick={() => setPage((current) => Math.max(1, current - 1))}
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
-            <span className="min-w-[90px] text-center text-xs font-semibold text-slate-600">
+            <span className="min-w-[90px] text-center text-xs font-semibold text-caption">
               Page {page} of {totalPages}
             </span>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-full"
               disabled={page >= totalPages || isLoading}
               onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             >

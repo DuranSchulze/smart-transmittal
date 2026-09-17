@@ -29,31 +29,31 @@ export function DeliveryPanel(props: DeliveryPanelProps) {
         title="Delivery & notes"
         description="Choose how the package will be transmitted and add internal context."
       />
-      <div className="space-y-6 p-6">
+      <div className="space-y-5 p-6">
         <div className="grid grid-cols-2 gap-2">
           {options.map(({ key, label }) => (
             <label
               key={key}
               className={`cursor-pointer rounded-xl border p-3 transition-colors ${
                 props.transmissionMethod[key]
-                  ? "border-brand-300 bg-brand-50"
-                  : "border-slate-200 bg-white hover:border-slate-300"
+                  ? "border-royal/20 bg-royal/5"
+                  : "border-divider bg-white hover:border-royal/20"
               }`}
             >
               <input
                 type="checkbox"
                 checked={props.transmissionMethod[key]}
                 onChange={(event) => props.onUpdateTransmission(key, event.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-brand-600"
+                className="h-4 w-4 rounded border-divider text-royal"
               />
-              <span className="mt-2 block text-[10px] font-bold text-slate-700">
+              <span className="mt-2 block text-xs font-medium text-caption">
                 {label}
               </span>
             </label>
           ))}
         </div>
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-slate-600">Internal notes</Label>
+          <Label className="text-xs font-medium text-caption">Internal notes</Label>
           <Textarea
             rows={7}
             value={props.notes}

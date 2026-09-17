@@ -135,13 +135,13 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
 }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h2 className="text-xs font-black text-slate-800 uppercase tracking-[0.2em] mb-4">
+      <h2 className="text-sm font-semibold text-ink mb-4">
         Signatories & Auth
       </h2>
       <div className="space-y-6">
-        <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100 space-y-4">
+        <div className="p-5 bg-fog rounded-2xl border border-divider space-y-4">
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Prepared By Name
             </Label>
             <SuggestionInput
@@ -152,7 +152,7 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Prepared By Role
             </Label>
             <SuggestionInput
@@ -163,9 +163,9 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
             />
           </div>
         </div>
-        <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100 space-y-4">
+        <div className="p-5 bg-fog rounded-2xl border border-divider space-y-4">
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Noted By Name
             </Label>
             <SuggestionInput
@@ -176,7 +176,7 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Noted By Role
             </Label>
             <SuggestionInput
@@ -188,7 +188,7 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
           </div>
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Time Released
           </Label>
           <Input

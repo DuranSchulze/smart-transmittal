@@ -47,12 +47,12 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
 }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h2 className="text-xs font-black text-slate-800 uppercase tracking-[0.2em] mb-4">
+      <h2 className="text-sm font-semibold text-ink mb-4">
         Recipient Dossier
       </h2>
       <div className="space-y-4">
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             To
           </Label>
           <Input
@@ -61,7 +61,7 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Organization
           </Label>
           <Input
@@ -72,7 +72,7 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Attention
           </Label>
           <Input
@@ -83,7 +83,7 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+          <Label className="text-xs font-medium text-caption ml-2">
             Full Address
           </Label>
           <ExpandingTextarea
@@ -94,7 +94,7 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Contact No.
             </Label>
             <Input
@@ -105,7 +105,7 @@ export const RecipientTab: React.FC<RecipientTabProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-caption ml-2">
               Email
             </Label>
             <Input

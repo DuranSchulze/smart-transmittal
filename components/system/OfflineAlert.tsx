@@ -27,15 +27,15 @@ export function OfflineAlert() {
   if (!isOffline) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-2xl">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-          <WifiOff className="h-8 w-8 text-red-600" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink/30 backdrop-blur-sm">
+      <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-feature">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-coral/10">
+          <WifiOff className="h-8 w-8 text-coral" />
         </div>
-        <h2 className="mb-2 text-lg font-bold text-slate-900">
+        <h2 className="mb-2 text-lg font-semibold text-ink">
           No Internet Connection
         </h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-helper">
           You appear to be offline. Please check your network connection.
           This dialog will dismiss automatically when you reconnect.
         </p>

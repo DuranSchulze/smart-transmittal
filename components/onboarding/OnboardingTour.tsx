@@ -221,7 +221,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
   return (
     <div className="fixed inset-0 z-[9000] pointer-events-none">
       {isCentered ? (
-        <div className="absolute inset-0 bg-slate-950/70 pointer-events-auto transition-colors duration-300 motion-reduce:transition-none" />
+        <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm pointer-events-auto transition-colors duration-300 motion-reduce:transition-none" />
       ) : (
         <div
           className="absolute pointer-events-auto transition-[top,left,width,height,border-radius,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
@@ -238,7 +238,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
 
       {!isCentered && targetRect && (
         <div
-          className="absolute z-[9001] rounded-md border-2 border-brand-400 pointer-events-none transition-[top,left,width,height,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
+          className="absolute z-[9001] rounded-lg border-2 border-royal/40 pointer-events-none transition-[top,left,width,height,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
           style={{
             top: highlightTop,
             left: highlightLeft,
@@ -271,25 +271,25 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       >
         <div
           key={step.id}
-          className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-lg bg-white shadow-[0_24px_70px_-20px_rgba(2,6,23,0.65)] animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:animate-none"
+          className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-2xl border border-divider bg-white shadow-feature animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:animate-none"
         >
-          <div className="flex shrink-0 items-start justify-between gap-4 bg-slate-950 px-6 py-5">
+          <div className="flex shrink-0 items-start justify-between gap-4 bg-wash px-6 py-5">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand-500 text-white shadow-lg shadow-brand-950/30">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-royal text-white shadow-glow-sm">
                 <HelpCircle className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-brand-300">
+                <p className="mb-1 text-xs font-medium text-helper">
                   Workspace tour · Step {currentStep + 1}
                 </p>
-                <h3 className="break-words text-base font-extrabold leading-snug text-white">
+                <h3 className="break-words text-sm font-semibold leading-snug text-ink">
                 {step.title}
                 </h3>
               </div>
             </div>
             <button
               onClick={onSkip}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/5 text-slate-400 transition-[background-color,color,transform] duration-150 hover:bg-white/10 hover:text-white active:scale-95 motion-reduce:transition-none"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-helper transition-[background-color,color,transform] duration-150 hover:bg-white hover:text-ink active:scale-95 motion-reduce:transition-none"
               title="Skip tour"
               aria-label="Close workspace tour"
             >
@@ -300,7 +300,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
           {hasItems ? (
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
               {step.body && (
-                <p className="mb-4 break-words text-[13px] font-medium leading-6 text-slate-600">
+                <p className="mb-4 break-words text-sm leading-6 text-caption">
                   {step.body}
                 </p>
               )}
@@ -308,10 +308,10 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
                 {step.items!.map((item) => (
                   <div
                     key={item.id}
-                    className={`flex items-start gap-3 rounded-md px-4 py-3 transition-[background-color,transform] duration-150 hover:-translate-y-px motion-reduce:transform-none motion-reduce:transition-none ${
+                    className={`flex items-start gap-3 rounded-lg px-4 py-3 transition-[background-color,transform] duration-150 hover:-translate-y-px motion-reduce:transform-none motion-reduce:transition-none ${
                       item.important
                         ? "bg-amber-100 hover:bg-amber-200/80"
-                        : "bg-slate-100 hover:bg-slate-200/80"
+                        : "bg-fog hover:bg-wash"
                     }`}
                   >
                     {item.important && (
@@ -320,32 +320,32 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`break-words text-[13px] font-extrabold ${
-                            item.important ? "text-amber-950" : "text-slate-900"
+                          className={`break-words text-sm font-semibold ${
+                            item.important ? "text-amber-950" : "text-ink"
                           }`}
                         >
                           {item.label}
                         </span>
                         {item.important && (
-                          <span className="rounded bg-amber-700 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white">
+                          <span className="rounded-full bg-amber-700 px-2 py-1 text-xs font-medium text-white">
                             Recommended
                           </span>
                         )}
                         {item.shortcut && (
-                          <span className="rounded bg-white px-2 py-1 font-mono text-[10px] font-bold text-slate-600 shadow-sm">
+                          <span className="rounded-full bg-white px-2 py-1 font-mono text-xs font-medium text-caption shadow-sm">
                             {item.shortcut}
                           </span>
                         )}
                       </div>
                       <p
                         className={`mt-1 break-words text-xs leading-5 ${
-                          item.important ? "text-amber-900" : "text-slate-600"
+                          item.important ? "text-amber-900" : "text-caption"
                         }`}
                       >
                         {item.description}
                       </p>
                       {item.important && item.importantNote && (
-                        <p className="mt-2 break-words text-xs font-bold leading-5 text-amber-800">
+                        <p className="mt-2 break-words text-xs font-medium leading-5 text-amber-800">
                           {item.importantNote}
                         </p>
                       )}
@@ -356,14 +356,14 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
             </div>
           ) : (
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-              <p className="break-words text-sm font-medium leading-7 text-slate-700">
+              <p className="break-words text-sm font-medium leading-relaxed text-caption">
                 {step.body}
               </p>
             </div>
           )}
 
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 bg-slate-50 px-6 py-4">
-            <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 bg-fog px-6 py-4">
+            <span className="text-xs font-medium text-helper">
               {currentStep + 1} / {steps.length}
             </span>
 
@@ -371,7 +371,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
               {currentStep > 0 && (
                 <button
                   onClick={onBack}
-                  className="flex h-9 items-center gap-1 rounded-md bg-slate-200 px-3 text-xs font-bold uppercase tracking-wide text-slate-700 transition-[background-color,transform] duration-150 hover:bg-slate-300 active:scale-[0.97] motion-reduce:transition-none"
+                  className="flex h-9 items-center gap-1 rounded-full bg-fog px-3 text-xs font-medium text-caption transition-[background-color,transform] duration-150 hover:bg-wash hover:text-royal active:scale-[0.97] motion-reduce:transition-none"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Back
@@ -379,21 +379,21 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
               )}
               <button
                 onClick={onSkip}
-                className="h-9 rounded-md px-3 text-xs font-bold uppercase tracking-wide text-slate-500 transition-[background-color,color,transform] duration-150 hover:bg-slate-200 hover:text-slate-800 active:scale-[0.97] motion-reduce:transition-none"
+                className="h-9 rounded-full px-3 text-xs font-medium text-helper transition-[background-color,color,transform] duration-150 hover:bg-wash hover:text-ink active:scale-[0.97] motion-reduce:transition-none"
               >
                 Skip
               </button>
               {isLastStep ? (
                 <button
                   onClick={onFinish}
-                  className="flex h-9 items-center gap-1 rounded-md bg-brand-600 px-4 text-xs font-bold uppercase tracking-wide text-white shadow-md shadow-brand-900/20 transition-[background-color,transform,box-shadow] duration-150 hover:bg-brand-700 hover:shadow-lg active:scale-[0.97] motion-reduce:transition-none"
+                  className="flex h-9 items-center gap-1 rounded-full bg-royal px-4 text-xs font-medium text-white shadow-glow-sm transition-[background-color,transform,box-shadow] duration-150 hover:bg-royal/90 active:scale-[0.97] motion-reduce:transition-none"
                 >
                   Finish
                 </button>
               ) : (
                 <button
                   onClick={onNext}
-                  className="flex h-9 items-center gap-1 rounded-md bg-brand-600 px-4 text-xs font-bold uppercase tracking-wide text-white shadow-md shadow-brand-900/20 transition-[background-color,transform,box-shadow] duration-150 hover:bg-brand-700 hover:shadow-lg active:scale-[0.97] motion-reduce:transition-none"
+                  className="flex h-9 items-center gap-1 rounded-full bg-royal px-4 text-xs font-medium text-white shadow-glow-sm transition-[background-color,transform,box-shadow] duration-150 hover:bg-royal/90 active:scale-[0.97] motion-reduce:transition-none"
                 >
                   Next
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -402,16 +402,16 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
             </div>
           </div>
 
-          <div className="flex shrink-0 gap-1 bg-slate-50 px-6 pb-4">
+          <div className="flex shrink-0 gap-1 bg-fog px-6 pb-4">
             {steps.map((_, idx) => (
               <div
                 key={idx}
                 className={`h-1.5 flex-1 transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none ${
                   idx === currentStep
-                    ? "scale-y-125 bg-brand-600"
+                    ? "scale-y-125 bg-royal"
                     : idx < currentStep
-                      ? "bg-brand-300"
-                      : "bg-slate-200"
+                      ? "bg-royal/40"
+                      : "bg-divider"
                 }`}
               />
             ))}

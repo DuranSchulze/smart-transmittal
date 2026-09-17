@@ -172,14 +172,14 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
   const getFileIcon = (file: File) => {
     if (file.type.startsWith("image/"))
-      return <ImageIcon className="w-4 h-4 text-purple-400" />;
+      return <ImageIcon className="w-4 h-4 text-cobalt" />;
     if (
       file.type === "application/msword" ||
       file.type ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-      return <FileText className="w-4 h-4 text-sky-500" />;
-    return <FileText className="w-4 h-4 text-blue-400" />;
+      return <FileText className="w-4 h-4 text-azure" />;
+    return <FileText className="w-4 h-4 text-royal" />;
   };
 
   const formatSize = (bytes: number) => {
@@ -192,15 +192,15 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-        <div className="bg-white w-full max-w-lg rounded-[28px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white flex flex-col max-h-[80vh]">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="bg-white w-full max-w-lg rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider flex flex-col max-h-[80vh]">
           {/* Header */}
-          <div className="p-6 pb-3 flex justify-between items-center">
+          <div className="p-5 pb-3 flex justify-between items-center">
             <div>
-              <h3 className="text-xl font-black text-slate-800 font-display">
+              <h3 className="text-xl font-semibold text-ink">
                 Upload Files
               </h3>
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-xs text-helper mt-1">
                 PDF, Word (.doc/.docx), and images supported
               </p>
             </div>
@@ -208,7 +208,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
               onClick={handleClose}
               variant="ghost"
               size="icon"
-              className="rounded-full"
+              className="rounded-full text-helper hover:text-ink"
               disabled={isParsing || driveUploadStatus === "uploading"}
             >
               <X className="w-4 h-4" />
@@ -216,33 +216,33 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
           </div>
 
           {/* Drop zone */}
-          <div className="px-6">
+          <div className="px-5">
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+              className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? "border-blue-400 bg-blue-50/50 scale-[1.01]"
-                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                  ? "border-royal/40 bg-wash scale-[1.01]"
+                  : "border-divider hover:border-royal/30 hover:bg-fog/60"
               }`}
             >
               <div className="flex flex-col items-center gap-3">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
-                    isDragging ? "bg-blue-100" : "bg-slate-100"
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+                    isDragging ? "bg-wash" : "bg-fog"
                   }`}
                 >
                   <Upload
-                    className={`w-5 h-5 ${isDragging ? "text-blue-500" : "text-slate-400"}`}
+                    className={`w-5 h-5 ${isDragging ? "text-royal" : "text-helper"}`}
                   />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-700">
+                  <p className="text-sm font-medium text-ink">
                     {isDragging ? "Drop files here" : "Drag & drop files here"}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-xs text-helper mt-1">
                     or click to browse your device
                   </p>
                 </div>
@@ -260,21 +260,21 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
           {/* File list */}
           {selectedFiles.length > 0 && (
-            <div className="flex-1 overflow-y-auto px-6 mt-4 space-y-2 min-h-0 max-h-[200px]">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <div className="flex-1 overflow-y-auto px-5 mt-4 space-y-2 min-h-0 max-h-[200px]">
+              <p className="text-xs font-medium text-helper">
                 {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""} selected
               </p>
               {selectedFiles.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-100 group"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-white border border-divider shadow-card hover:bg-fog group"
                 >
                   {getFileIcon(file)}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-700 truncate">
+                    <p className="text-xs font-medium text-ink truncate">
                       {file.name}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-xs text-helper">
                       {formatSize(file.size)}
                     </p>
                   </div>
@@ -283,9 +283,9 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                       e.stopPropagation();
                       removeFile(index);
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded-lg"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-coral/10 rounded-full"
                   >
-                    <Trash2 className="w-3 h-3 text-red-400" />
+                    <Trash2 className="w-3 h-3 text-coral" />
                   </button>
                 </div>
               ))}
@@ -294,8 +294,8 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
           {/* Rejected files notice */}
           {rejectedNotice && (
-            <div className="px-6 mt-3">
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="px-5 mt-3">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium animate-in fade-in slide-in-from-top-2 duration-300">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <span>{rejectedNotice}</span>
                 <button
@@ -309,17 +309,17 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
           )}
 
           {/* Drive toggle + status */}
-          <div className="px-6 mt-4 space-y-3">
+          <div className="px-5 mt-4 space-y-3">
             {isDriveReady && selectedFiles.length > 0 && (
-              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-50 transition-all">
+              <label className="flex items-center gap-3 p-3 rounded-lg border border-divider bg-white shadow-card cursor-pointer hover:bg-fog transition-all">
                 <input
                   type="checkbox"
                   checked={saveToDrive}
                   onChange={(e) => setSaveToDrive(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600 border-slate-300"
+                  className="w-4 h-4 rounded text-royal border-divider"
                 />
-                <Cloud className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-600">
+                <Cloud className="w-4 h-4 text-helper" />
+                <span className="text-xs font-medium text-caption">
                   Also save original files to Google Drive
                 </span>
               </label>
@@ -327,12 +327,12 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
             {driveUploadMsg && (
               <div
-                className={`p-3 rounded-xl text-[10px] font-bold border flex items-center gap-2 ${
+                className={`p-3 rounded-lg text-xs font-medium border flex items-center gap-2 ${
                   driveUploadStatus === "error"
-                    ? "bg-red-50 border-red-100 text-red-600"
+                    ? "bg-coral/10 border-coral/20 text-coral"
                     : driveUploadStatus === "done"
-                      ? "bg-green-50 border-green-100 text-green-600"
-                      : "bg-blue-50 border-blue-100 text-blue-600"
+                      ? "bg-mint/10 border-mint/20 text-mint"
+                      : "bg-wash border-royal/20 text-royal"
                 }`}
               >
                 {driveUploadStatus === "uploading" && (
@@ -346,7 +346,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
             )}
 
             {isParsing && (
-              <div className="p-3 rounded-xl text-[10px] font-bold border bg-blue-50 border-blue-100 text-blue-600 flex items-center gap-2">
+              <div className="p-3 rounded-lg text-xs font-medium border bg-wash border-royal/20 text-royal flex items-center gap-2">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Parsing {parseProgress.current}/{parseProgress.total} files...
               </div>
@@ -354,7 +354,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="p-6 pt-4 flex gap-3">
+          <div className="p-5 pt-4 flex gap-3">
             <Button
               onClick={handleProcess}
               disabled={
@@ -362,7 +362,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 isParsing ||
                 driveUploadStatus === "uploading"
               }
-              className="flex-1 rounded-xl text-xs font-bold"
+              className="flex-1 rounded-full text-xs font-medium"
             >
               {isParsing ? (
                 <>
@@ -378,7 +378,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
             <Button
               onClick={handleClose}
               variant="outline"
-              className="rounded-xl text-xs"
+              className="rounded-full text-xs font-medium"
               disabled={isParsing || driveUploadStatus === "uploading"}
             >
               Cancel

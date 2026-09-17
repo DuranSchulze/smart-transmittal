@@ -44,14 +44,14 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
   if (!isOpen) return null;
   const selectedCount = Object.values(selectedIds).filter(Boolean).length;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider">
+        <div className="p-5 border-b border-divider flex justify-between items-center bg-fog">
           <div>
-            <h3 className="text-2xl font-black text-slate-800 font-display">
+            <h3 className="text-xl font-semibold text-ink">
               Browse Drive Files
             </h3>
-            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">
+            <p className="text-xs font-medium text-helper mt-1">
               Search and select documents to import
             </p>
           </div>
@@ -59,13 +59,13 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             onClick={onClose}
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="rounded-full text-helper hover:text-ink"
             disabled={isImporting}
           >
             ✕
           </Button>
         </div>
-        <div className="p-8 space-y-5">
+        <div className="p-6 space-y-5">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Input
@@ -75,7 +75,11 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
                 disabled={isImporting}
               />
             </div>
-            <Button onClick={onSearch} disabled={isLoading || isImporting}>
+            <Button
+              onClick={onSearch}
+              disabled={isLoading || isImporting}
+              className="rounded-full font-medium"
+            >
               {isImporting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -87,15 +91,15 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             </Button>
           </div>
 
-          <div className="border border-slate-100 rounded-[24px] overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 bg-slate-50/70 border-b border-slate-100">
-              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="border border-divider rounded-xl overflow-hidden bg-white">
+            <div className="flex items-center justify-between px-4 py-3 bg-fog border-b border-divider">
+              <label className="flex items-center gap-2 text-xs font-medium text-helper">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={onToggleAll}
                   disabled={files.length === 0 || isImporting}
-                  className="w-4 h-4 rounded-md text-brand-600 border-slate-300"
+                  className="w-4 h-4 rounded-md text-royal border-divider"
                 />
                 Select All
               </label>
@@ -105,29 +109,32 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             </div>
             <div className="max-h-[320px] overflow-y-auto">
               {isLoading ? (
-                <div className="p-6 text-xs font-semibold text-slate-400">
+                <div className="p-6 text-xs font-medium text-helper">
                   Loading Drive files...
                 </div>
               ) : files.length === 0 ? (
-                <div className="p-6 text-xs font-semibold text-slate-400">
+                <div className="p-6 text-xs font-medium text-helper">
                   {error || "No files found."}
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-divider">
                   {files.map((file) => (
-                    <li key={file.id} className="flex items-center gap-3 p-4">
+                    <li
+                      key={file.id}
+                      className="flex items-center gap-3 p-3 hover:bg-fog transition-colors"
+                    >
                       <input
                         type="checkbox"
                         checked={!!selectedIds[file.id]}
                         onChange={() => onToggle(file.id)}
                         disabled={isImporting}
-                        className="w-4 h-4 rounded-md text-brand-600 border-slate-300"
+                        className="w-4 h-4 rounded-md text-royal border-divider"
                       />
                       <div className="flex-1">
-                        <p className="text-xs font-semibold text-slate-800">
+                        <p className="text-xs font-medium text-ink">
                           {file.name}
                         </p>
-                        <p className="text-[10px] text-slate-400">
+                        <p className="text-xs text-helper">
                           {file.mimeType}
                         </p>
                       </div>
@@ -139,13 +146,13 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
           </div>
 
           {error && files.length > 0 && (
-            <div className="p-3 rounded-2xl text-[10px] font-bold border bg-red-50 border-red-100 text-red-600">
+            <div className="p-3 rounded-lg text-xs font-medium border bg-coral/10 border-coral/20 text-coral">
               {error}
             </div>
           )}
 
           {isImporting ? (
-            <div className="p-3 rounded-2xl text-[10px] font-bold border bg-brand-50 border-brand-100 text-brand-700 flex items-center gap-2">
+            <div className="p-3 rounded-lg text-xs font-medium border bg-wash border-royal/20 text-royal flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               {processingMessage || "Importing selected Drive files..."}
             </div>
@@ -155,7 +162,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             <Button
               onClick={onClose}
               variant="ghost"
-              className="flex-1 py-3 rounded-2xl font-bold"
+              className="flex-1 rounded-full font-medium bg-fog text-caption hover:bg-fog/80"
               disabled={isImporting}
             >
               Cancel
@@ -163,7 +170,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             <Button
               onClick={onAddSelected}
               disabled={selectedCount === 0 || isImporting}
-              className="flex-1 py-3 rounded-2xl bg-brand-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-brand-500 disabled:opacity-50"
+              className="flex-1 rounded-full bg-royal text-white text-xs font-medium hover:bg-royal/90 disabled:opacity-50"
             >
               {isImporting ? (
                 <>

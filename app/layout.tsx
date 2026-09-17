@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
 import Script from "next/script";
 import "./globals.css";
-import { Geist } from "next/font/google";
 import { OfflineAlert } from "@/components/system/OfflineAlert";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata = {
   title: "Smart Transmittal",
@@ -12,7 +9,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={geist.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Google Tag Manager */}
         <Script
@@ -40,11 +37,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@500;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-gray-50 text-slate-800 antialiased selection:bg-brand-200 selection:text-brand-900">
+      <body className="bg-background text-foreground antialiased selection:bg-wash selection:text-ink">
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

@@ -32,21 +32,21 @@ function SummaryCard({
   incomplete,
 }: SummaryCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+    <div className="rounded-lg border border-divider bg-white p-3 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+          <p className="text-xs font-medium text-helper">
             {title}
           </p>
-          <p className={`mt-1 truncate text-xs font-semibold ${incomplete ? "text-amber-600" : "text-slate-800"}`}>
+          <p className={`mt-1 truncate text-sm font-medium ${incomplete ? "text-amber-600" : "text-graphite"}`}>
             {value}
           </p>
-          {detail ? <p className="mt-0.5 truncate text-[10px] text-slate-400">{detail}</p> : null}
+          {detail ? <p className="mt-0.5 truncate text-xs text-helper">{detail}</p> : null}
         </div>
         <button
           type="button"
           onClick={onEdit}
-          className="text-[10px] font-bold text-brand-600 hover:text-brand-700"
+          className="text-xs font-medium text-royal hover:text-royal/80"
         >
           Edit
         </button>
@@ -102,14 +102,14 @@ export function ReviewPanel(props: ReviewPanelProps) {
           />
         </div>
 
-        <div className="rounded-2xl bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/10">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <div className="rounded-2xl border border-divider bg-wash p-4">
+          <p className="text-xs font-medium text-caption">
             Ready when you are
           </p>
           <Button
             onClick={props.onSave}
             disabled={props.isSaving}
-            className="mt-3 h-11 w-full rounded-xl bg-white text-slate-950 hover:bg-slate-100"
+            className="mt-3 h-11 w-full rounded-full bg-royal text-white hover:bg-royal/90"
           >
             <Save className="mr-2 h-4 w-4" />
             {props.isSaving ? "Saving…" : "Save transmittal"}
@@ -119,7 +119,7 @@ export function ReviewPanel(props: ReviewPanelProps) {
               variant="outline"
               onClick={props.onExportPdf}
               disabled={props.isGeneratingPdf}
-              className="border-white/15 bg-white/5 text-[10px] text-white hover:bg-white/10 hover:text-white"
+              className="rounded-full border border-royal/60 bg-white text-xs text-royal hover:bg-royal/5"
             >
               <FileText className="mr-1.5 h-3.5 w-3.5" /> PDF
             </Button>
@@ -127,7 +127,7 @@ export function ReviewPanel(props: ReviewPanelProps) {
               variant="outline"
               onClick={props.onExportDocx}
               disabled={props.isGeneratingDocx}
-              className="border-white/15 bg-white/5 text-[10px] text-white hover:bg-white/10 hover:text-white"
+              className="rounded-full border border-royal/60 bg-white text-xs text-royal hover:bg-royal/5"
             >
               <Download className="mr-1.5 h-3.5 w-3.5" /> Word
             </Button>

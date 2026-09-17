@@ -41,14 +41,14 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
   const isUpdateMode = mode === "update";
 
   return (
-    <div className="fixed inset-0 z-[102] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div className="fixed inset-0 z-[102] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider">
+        <div className="p-5 border-b border-divider flex justify-between items-center bg-fog">
           <div>
-            <h3 className="text-2xl font-black text-slate-800 font-display">
+            <h3 className="text-xl font-semibold text-ink">
               {isUpdateMode ? "Update Agency / Brand" : "Add Agency / Brand"}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">
+            <p className="text-xs font-medium text-helper mt-1">
               {isUpdateMode
                 ? "Edit the selected agency details"
                 : "Save presets for quick reuse"}
@@ -58,15 +58,15 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
             onClick={onClose}
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="rounded-full text-helper hover:text-ink"
           >
             ✕
           </Button>
         </div>
 
-        <div className="p-8 space-y-5">
+        <div className="p-6 space-y-5">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-3xl border border-slate-200 bg-white shadow-sm flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-lg border border-divider bg-white shadow-card flex items-center justify-center overflow-hidden">
               {draft.logoBase64 ? (
                 <img
                   src={draft.logoBase64}
@@ -74,26 +74,26 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                   className="w-full h-full object-contain"
                 />
               ) : (
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                <span className="text-xs font-medium text-helper">
                   Logo
                 </span>
               )}
             </div>
             <div className="flex-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Upload Logo
               </Label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={onLogoUpload}
-                className="block w-full mt-1 text-xs font-semibold text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-2xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-slate-900 file:text-white hover:file:bg-slate-800"
+                className="block w-full mt-1 text-xs font-medium text-caption file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-royal file:text-white hover:file:bg-royal/90"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+            <Label className="text-xs font-medium text-helper ml-2">
               Import Logo from Google Drive
             </Label>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -110,7 +110,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                 disabled={
                   !isDriveReady || !driveLogoLink.trim() || isImportingDriveLogo
                 }
-                className="rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]"
+                className="rounded-full text-xs font-medium border-royal/60 bg-white text-royal hover:bg-royal/5 hover:text-royal"
               >
                 {isImportingDriveLogo ? (
                   <>
@@ -123,15 +123,15 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
               </Button>
             </div>
             {!isDriveReady ? (
-              <p className="text-[10px] text-slate-400 px-1">
+              <p className="text-xs text-helper px-1">
                 Connect Google Drive first to import logo links.
               </p>
             ) : null}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Agency Name
               </Label>
               <Input
@@ -142,7 +142,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Address Line 1
               </Label>
               <Input
@@ -153,7 +153,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Address Line 2
               </Label>
               <Input
@@ -164,7 +164,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Website
               </Label>
               <Input
@@ -174,9 +174,9 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                 }
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+                <Label className="text-xs font-medium text-helper ml-2">
                   Telephone
                 </Label>
                 <Input
@@ -187,7 +187,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+                <Label className="text-xs font-medium text-helper ml-2">
                   Mobile
                 </Label>
                 <Input
@@ -199,7 +199,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">
+              <Label className="text-xs font-medium text-helper ml-2">
                 Email
               </Label>
               <Input
@@ -209,18 +209,18 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
             </div>
           </div>
 
-          <div className="flex gap-4 pt-2">
+          <div className="flex gap-3 pt-2">
             <Button
               onClick={onClose}
               variant="ghost"
-              className="flex-1 py-4 rounded-2xl font-bold"
+              className="flex-1 rounded-full font-medium bg-fog text-caption hover:bg-fog/80"
             >
               Cancel
             </Button>
             <Button
               onClick={onSave}
               disabled={!draft.agencyName.trim()}
-              className="flex-[2] py-4 bg-brand-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-brand-500 disabled:opacity-50 transition-all active:scale-95"
+              className="flex-[2] bg-royal text-white rounded-full text-xs font-medium shadow-card hover:bg-royal/90 disabled:opacity-50 transition-all active:scale-[0.99]"
             >
               {isUpdateMode ? "Update Agency" : "Save Agency"}
             </Button>

@@ -51,7 +51,7 @@ type PreviewPanelProps = {
 }
 
 const fallback = (
-  <div className="flex flex-1 items-center justify-center bg-slate-100 p-8 text-sm text-slate-600">
+  <div className="flex flex-1 items-center justify-center bg-canvas p-6 text-sm text-caption">
     The preview could not be rendered. Your form data is still safe in the editor.
   </div>
 )
@@ -62,7 +62,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
       <div
         data-tour="preview-panel"
         ref={props.containerRef}
-        className={`${props.showPreview ? "flex" : "hidden"} lg:flex flex-1 h-full overflow-y-auto overflow-x-hidden bg-slate-200 custom-scrollbar w-full absolute inset-0 lg:static z-10 flex-col items-center`}
+        className={`${props.showPreview ? "flex" : "hidden"} lg:flex flex-1 h-full overflow-y-auto overflow-x-hidden bg-fog custom-scrollbar w-full absolute inset-0 lg:static z-10 flex-col items-center`}
       >
         <PreviewToolbar
           zoomPercent={props.zoomPercent}
@@ -74,9 +74,9 @@ export function PreviewPanel(props: PreviewPanelProps) {
           transmittalNumber={props.data.project.transmittalNumber}
           showSaveNotice={props.hasFormData}
         />
-        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col items-center p-4 lg:p-8 pt-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col items-center p-4 lg:p-6 pt-0">
           <div
-            className={`transition-all duration-300 ease-out origin-top shadow-[0_40px_100px_rgba(0,0,0,0.15)] rounded-sm shrink-0 ${props.isDocumentProcessing ? "opacity-60" : "opacity-100"}`}
+            className={`transition-all duration-300 ease-out origin-top shadow-feature rounded-sm shrink-0 ${props.isDocumentProcessing ? "opacity-60" : "opacity-100"}`}
             style={{
               transform: `scale(${props.previewScale})`,
               width: "816px",
