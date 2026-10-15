@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   GEMINI_MODEL_OPTIONS,
   getGeminiModelLabel,
+  type GeminiModelOption,
 } from "@/lib/gemini-models";
 
 
@@ -33,15 +34,46 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
   const [isDeletingAiKey, setIsDeletingAiKey] = useState(false);
   const [selectedModel, setSelectedModel] = useState("");
   const [isSavingAiModel, setIsSavingAiModel] = useState(false);
+  const [availableModels, setAvailableModels] = useState<
+    GeminiModelOption[] | null
+  >(null);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelsSource, setModelsSource] = useState<
+    "personal" | "system" | "none" | null
+  >(null);
 
+  const baseModelOptions = availableModels?.length
+    ? availableModels
+    : GEMINI_MODEL_OPTIONS;
   const modelChoices =
     selectedModel &&
-    !GEMINI_MODEL_OPTIONS.some((option) => option.id === selectedModel)
+    !baseModelOptions.some((option) => option.id === selectedModel)
       ? [
-          ...GEMINI_MODEL_OPTIONS,
+          ...baseModelOptions,
           { id: selectedModel, label: selectedModel, description: "Custom model" },
         ]
-      : GEMINI_MODEL_OPTIONS;
+      : baseModelOptions;
+
+  const loadAvailableModels = async () => {
+    if (!apiBaseUrl) return;
+    setIsLoadingModels(true);
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/gemini-models`, {
+        credentials: "include",
+      });
+      const payload = await response.json().catch(() => ({}));
+      const models: GeminiModelOption[] = Array.isArray(payload?.models)
+        ? payload.models
+        : [];
+      setAvailableModels(models.length ? models : null);
+      setModelsSource(payload?.source ?? null);
+    } catch {
+      setAvailableModels(null);
+      setModelsSource(null);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
 
   const loadAiSettings = async () => {
     if (!apiBaseUrl) return;
@@ -69,6 +101,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
     setShowApiKey(false);
     setIsAiSettingsOpen(true);
     void loadAiSettings();
+    void loadAvailableModels();
   };
 
   useEffect(() => {
@@ -282,12 +315,22 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
             </div>
             <div className="p-6 space-y-4">
               <div className="space-y-2">
-                <label
-                  htmlFor="gemini-model"
-                  className="text-xs font-medium text-caption"
-                >
-                  Gemini model
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label
+                    htmlFor="gemini-model"
+                    className="text-xs font-medium text-caption"
+                  >
+                    Gemini model
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void loadAvailableModels()}
+                    disabled={isLoadingModels}
+                    className="text-xs font-medium text-helper hover:text-royal disabled:opacity-50"
+                  >
+                    {isLoadingModels ? "Refreshing…" : "Refresh list"}
+                  </button>
+                </div>
                 <select
                   id="gemini-model"
                   value={selectedModel}
@@ -299,6 +342,11 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
                   }}
                   className="w-full rounded-lg border border-divider bg-white px-3 py-2 text-xs text-ink outline-none focus:border-royal disabled:opacity-50"
                 >
+                  {!selectedModel ? (
+                    <option value="">
+                      {isLoadingAiSettings ? "Loading..." : "Select a model"}
+                    </option>
+                  ) : null}
                   {modelChoices.map((model) => (
                     <option key={model.id} value={model.id}>
                       {model.label}
@@ -306,8 +354,13 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
                   ))}
                 </select>
                 <p className="text-xs text-helper">
-                  Applies to every AI parse across the app — Drive imports,
-                  uploads, and link analysis.
+                  {isLoadingModels
+                    ? "Loading models from the Gemini API…"
+                    : availableModels
+                      ? `Loaded from your ${modelsSource === "personal" ? "personal" : "system"} Gemini API key.`
+                      : "Showing the default model list."}{" "}
+                  Used for every AI parse — Drive imports, uploads, and link
+                  analysis.
                 </p>
               </div>
 
