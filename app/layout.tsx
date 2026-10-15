@@ -11,6 +11,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* React Grab — dev-only element → source picker. Hover an element,
+            press ⌘C / Ctrl+C, and paste the source context to your agent. */}
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            id="react-grab"
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
         {/* Google Tag Manager */}
         <Script
           id="gtm-head"

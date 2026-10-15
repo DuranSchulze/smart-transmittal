@@ -1,3 +1,4 @@
+import { senderLogoForStorage } from "./sender-logo"
 import type { AppData } from "../types"
 import { ensureTransmittalPrefix, stripTransmittalPrefix } from "../lib/utils"
 import { db } from "./auth"
@@ -31,14 +32,13 @@ export function mapTransmittalForApi<
   }
 }
 
-const assertAgencyOwnership = async (
+const assertAgencyAvailable = async (
   client: DatabaseClient,
-  userId: string,
   agencyId: string | null,
 ) => {
   if (!agencyId) return
   const agency = await client.agency.findFirst({
-    where: { id: agencyId, userId },
+    where: { id: agencyId },
     select: { id: true },
   })
   if (!agency) throw new ServiceError(400, "Invalid agency")
@@ -330,9 +330,10 @@ export async function createTransmittal(
   isDraft: boolean,
 ) {
   try {
+    data = { ...data, sender: await senderLogoForStorage(data.sender) }
     return await db.$transaction(async (transaction) => {
       const agencyId = data.agencyId ? String(data.agencyId) : null
-      await assertAgencyOwnership(transaction, userId, agencyId)
+      await assertAgencyAvailable(transaction, agencyId)
 
       const requestedNumber = data.project.transmittalNumber.trim()
       let projectStoredNumber = ensureTransmittalPrefix(requestedNumber)
@@ -373,6 +374,11 @@ export async function updateTransmittal(
   isDraft: boolean,
 ) {
   try {
+    if (data.sender.logoBase64 && !data.sender.logoUrl) {
+      const owner = await db.transmittal.findFirst({ where: { id, userId }, select: { id: true } })
+      if (!owner) throw new ServiceError(404, "Transmittal not found")
+    }
+    data = { ...data, sender: await senderLogoForStorage(data.sender) }
     return await db.$transaction(async (transaction) => {
       const existing = await transaction.transmittal.findFirst({
         where: { id, userId },
@@ -380,7 +386,7 @@ export async function updateTransmittal(
       if (!existing) throw new ServiceError(404, "Transmittal not found")
 
       const agencyId = data.agencyId ? String(data.agencyId) : null
-      await assertAgencyOwnership(transaction, userId, agencyId)
+      await assertAgencyAvailable(transaction, agencyId)
 
       const projectStoredNumber = ensureTransmittalPrefix(
         data.project.transmittalNumber,

@@ -47,6 +47,14 @@ describe("useExport", () => {
     })
 
     expect(pdfMocks.factory).toHaveBeenCalledOnce()
+    const exportedElement = pdfMocks.worker.from.mock.calls[0][0] as HTMLElement
+    expect(exportedElement).not.toBe(document.getElementById("print-container"))
+    expect(exportedElement.style.width).toBe("720px")
+    expect(exportedElement.style.minHeight).toBe("0px")
+    expect(exportedElement.isConnected).toBe(false)
+    expect(pdfMocks.worker.set).toHaveBeenCalledWith(expect.objectContaining({
+      pagebreak: expect.objectContaining({ avoid: expect.arrayContaining([".transmittal-closing", ".transmittal-items tr"]) }),
+    }))
     expect(pdfMocks.worker.outputPdf).toHaveBeenCalledWith("blob")
     expect(result.current.exportChoiceOpen).toBe(true)
     expect(result.current.pendingExportFormat).toBe("pdf")
@@ -57,5 +65,16 @@ describe("useExport", () => {
       "scale(0.75)",
     )
     expect(onStatus).not.toHaveBeenCalled()
+  })
+
+  it("removes the export clone and keeps the editor intact when generation fails", async () => {
+    pdfMocks.worker.outputPdf.mockRejectedValueOnce(new Error("PDF generation failed"))
+    const onStatus = vi.fn()
+    const { result } = renderHook(() => useExport({ data: createInitialTransmittalData(), onStatus }))
+    await act(async () => { await result.current.exportPdf() })
+    expect(document.querySelector(".pdf-export")).toBeNull()
+    expect(document.getElementById("preview-wrapper")?.style.transform).toBe("scale(0.75)")
+    expect(onStatus).toHaveBeenCalledWith(expect.any(String), "error")
+    expect(result.current.exportChoiceOpen).toBe(false)
   })
 })

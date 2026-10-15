@@ -1,5 +1,7 @@
 "use client";
 
+import { getAgencyLogo } from "@/lib/agency-logo";
+
 import React from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,9 @@ import { SenderInfo } from "../../types";
 
 interface AgencyPresetModalProps {
   isOpen: boolean;
+  isSaving?: boolean;
+  isUploadingLogo?: boolean;
+  saveError?: string | null;
   onClose: () => void;
   mode: "create" | "update";
   isDriveReady: boolean;
@@ -24,6 +29,9 @@ interface AgencyPresetModalProps {
 
 export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
   isOpen,
+  isSaving = false,
+  isUploadingLogo = false,
+  saveError,
   onClose,
   mode,
   isDriveReady,
@@ -42,20 +50,21 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[102] flex items-center justify-center p-4 bg-ink/30 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-feature overflow-hidden animate-in zoom-in-95 duration-300 border border-divider">
+      <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-feature animate-in zoom-in-95 duration-300 border border-divider">
         <div className="p-5 border-b border-divider flex justify-between items-center bg-fog">
           <div>
             <h3 className="text-xl font-semibold text-ink">
-              {isUpdateMode ? "Update Agency / Brand" : "Add Agency / Brand"}
+              {isUpdateMode ? "Edit shared agency" : "Create agency"}
             </h3>
             <p className="text-xs font-medium text-helper mt-1">
               {isUpdateMode
-                ? "Edit the selected agency details"
-                : "Save presets for quick reuse"}
+                ? "Changes will be available to everyone using this agency."
+                : "Save the company logo and details for everyone to use."}
             </p>
           </div>
           <Button
             onClick={onClose}
+            disabled={isSaving || isImportingDriveLogo || isUploadingLogo}
             variant="ghost"
             size="icon"
             className="rounded-full text-helper hover:text-ink"
@@ -64,12 +73,14 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
           </Button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <fieldset disabled={isSaving || isImportingDriveLogo || isUploadingLogo} className="p-6 space-y-5">
+          <div className="rounded-xl border border-royal/15 bg-wash p-3 text-xs leading-relaxed text-caption">This agency will be visible to all signed-in users. Add company information that is appropriate to share.</div>
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-lg border border-divider bg-white shadow-card flex items-center justify-center overflow-hidden">
-              {draft.logoBase64 ? (
+            <div className="w-20 h-20 shrink-0 rounded-lg border border-divider bg-white shadow-card flex items-center justify-center overflow-hidden">
+              {getAgencyLogo(draft) ? (
                 <img
-                  src={draft.logoBase64}
+                  src={getAgencyLogo(draft)!}
+                  crossOrigin="anonymous"
                   alt="Agency logo"
                   className="w-full h-full object-contain"
                 />
@@ -79,18 +90,27 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                 </span>
               )}
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <Label className="text-xs font-medium text-helper ml-2">
                 Upload Logo
               </Label>
               <input
                 type="file"
-                accept="image/*"
+                aria-label="Upload agency logo"
+                accept="image/png,image/jpeg,image/webp,image/gif"
                 onChange={onLogoUpload}
                 className="block w-full mt-1 text-xs font-medium text-caption file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-royal file:text-white hover:file:bg-royal/90"
               />
+              <p className="mt-2 text-[11px] text-helper">PNG, JPG, WebP, or GIF · up to 2 MB. Your logo uploads to ImageKit when you save the agency.</p>
+              {getAgencyLogo(draft) && <button type="button" onClick={() => onChange({ ...draft, logoUrl: null, logoBase64: null })} className="mt-1 text-xs text-coral">Remove logo</button>}
             </div>
           </div>
+
+          {draft.logoUrl && <div className="space-y-1.5 rounded-xl border border-divider bg-fog/50 p-3">
+            <Label className="text-xs text-helper" htmlFor="agency-logo-url">Saved logo URL</Label>
+            <Input id="agency-logo-url" readOnly value={draft.logoUrl} className="text-xs" />
+            <a href={draft.logoUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-royal">Open saved logo</a>
+          </div>}
 
           <div className="space-y-2">
             <Label className="text-xs font-medium text-helper ml-2">
@@ -135,6 +155,7 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
                 Agency Name
               </Label>
               <Input
+                maxLength={160}
                 value={draft.agencyName}
                 onChange={(e) =>
                   onChange({ ...draft, agencyName: e.target.value })
@@ -209,9 +230,11 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
             </div>
           </div>
 
+          {saveError && <p role="alert" className="rounded-xl border border-coral/20 bg-coral/10 p-3 text-xs text-coral">{saveError}</p>}
           <div className="flex gap-3 pt-2">
             <Button
               onClick={onClose}
+              disabled={isSaving || isImportingDriveLogo || isUploadingLogo}
               variant="ghost"
               className="flex-1 rounded-full font-medium bg-fog text-caption hover:bg-fog/80"
             >
@@ -219,13 +242,13 @@ export const AgencyPresetModal: React.FC<AgencyPresetModalProps> = ({
             </Button>
             <Button
               onClick={onSave}
-              disabled={!draft.agencyName.trim()}
+              disabled={!draft.agencyName.trim() || isSaving || isImportingDriveLogo}
               className="flex-[2] bg-royal text-white rounded-full text-xs font-medium shadow-card hover:bg-royal/90 disabled:opacity-50 transition-all active:scale-[0.99]"
             >
-              {isUpdateMode ? "Update Agency" : "Save Agency"}
+              {isSaving ? "Saving agency…" : isUpdateMode ? "Save shared changes" : "Create agency"}
             </Button>
           </div>
-        </div>
+        </fieldset>
       </div>
     </div>
   );

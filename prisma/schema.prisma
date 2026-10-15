@@ -29,7 +29,8 @@ model User {
 model UserAiSettings {
   id                    String   @id @default(cuid())
   userId                String   @unique
-  geminiApiKeyEncrypted String
+  geminiApiKeyEncrypted String?
+  geminiModel           String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -183,7 +184,10 @@ model Agency {
   telephoneNumber String?
   contactNumber   String?
   email           String?
+  // Legacy inline data is cleared when migrating or saving a logo.
   logoBase64      String?
+  logoUrl         String?
+  logoFileId      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

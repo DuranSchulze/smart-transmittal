@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 
 interface BulkAddModalProps {
   isOpen: boolean;
+  processingMessage?: string;
   onClose: () => void;
   onImportDriveLink: (link: string) => Promise<void> | void;
 }
 
 export const BulkAddModal: React.FC<BulkAddModalProps> = ({
   isOpen,
+  processingMessage,
   onClose,
   onImportDriveLink,
 }) => {
@@ -34,6 +36,7 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
           </div>
           <Button
             onClick={onClose}
+            disabled={isSubmittingDrive}
             variant="ghost"
             size="icon"
             className="rounded-full text-helper hover:text-ink"
@@ -45,12 +48,13 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
           <div className="space-y-3">
             <Input
               placeholder="Paste Google Drive folder link..."
+              disabled={isSubmittingDrive}
               value={driveLink}
               onChange={(e) => setDriveLink(e.target.value)}
               autoFocus
             />
             <p className="text-xs font-medium text-helper">
-              Imports all files in the folder
+              Imports files directly inside the folder. Subfolders are excluded.
             </p>
           </div>
 
@@ -67,13 +71,14 @@ export const BulkAddModal: React.FC<BulkAddModalProps> = ({
 
           {statusMsg ? (
             <div className="mt-4 rounded-lg border border-divider bg-fog p-4 text-sm text-caption">
-              {statusMsg}
+              {isSubmittingDrive ? processingMessage || statusMsg : statusMsg}
             </div>
           ) : null}
 
           <div className="mt-6 flex gap-3">
             <Button
               onClick={onClose}
+            disabled={isSubmittingDrive}
               variant="ghost"
               className="flex-1 rounded-full font-medium bg-fog text-caption hover:bg-fog/80"
             >

@@ -147,6 +147,11 @@ export function useTransmittalPersistence({
           )
       const saved = result.transmittal
 
+      if (typeof saved.sender?.logoUrl === "string" && snapshot.sender.logoBase64) {
+        setData(current => current.sender.logoBase64 === snapshot.sender.logoBase64 && current.sender.logoUrl === snapshot.sender.logoUrl
+          ? { ...current, sender: { ...current.sender, logoUrl: String(saved.sender.logoUrl), logoBase64: null } }
+          : current)
+      }
       activeIdRef.current = saved.id
       setActiveTransmittalId(saved.id)
       setActiveTransmittalIsDraft(Boolean(saved.isDraft))

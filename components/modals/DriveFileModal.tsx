@@ -20,6 +20,8 @@ interface DriveFileModalProps {
   onToggle: (id: string) => void;
   onToggleAll: () => void;
   onAddSelected: () => void;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
   isImporting?: boolean;
   processingMessage?: string;
 }
@@ -38,6 +40,8 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
   onToggle,
   onToggleAll,
   onAddSelected,
+  hasMore = false,
+  onLoadMore,
   isImporting = false,
   processingMessage = "",
 }) => {
@@ -71,6 +75,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
               <Input
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={(event) => { if (event.key === "Enter" && !isLoading && !isImporting) onSearch(); }}
                 placeholder="Search by file name"
                 disabled={isImporting}
               />
@@ -98,7 +103,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={onToggleAll}
-                  disabled={files.length === 0 || isImporting}
+                  disabled={files.length === 0 || isLoading || isImporting}
                   className="w-4 h-4 rounded-md text-royal border-divider"
                 />
                 Select All
@@ -108,7 +113,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
               </Badge>
             </div>
             <div className="max-h-[320px] overflow-y-auto">
-              {isLoading ? (
+              {isLoading && files.length === 0 ? (
                 <div className="p-6 text-xs font-medium text-helper">
                   Loading Drive files...
                 </div>
@@ -127,7 +132,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
                         type="checkbox"
                         checked={!!selectedIds[file.id]}
                         onChange={() => onToggle(file.id)}
-                        disabled={isImporting}
+                        disabled={isImporting || isLoading}
                         className="w-4 h-4 rounded-md text-royal border-divider"
                       />
                       <div className="flex-1">
@@ -144,6 +149,12 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
               )}
             </div>
           </div>
+
+          {hasMore && (
+            <Button variant="outline" onClick={onLoadMore} disabled={isLoading || isImporting} className="w-full rounded-full">
+              {isLoading ? "Loading more files…" : "Load more files"}
+            </Button>
+          )}
 
           {error && files.length > 0 && (
             <div className="p-3 rounded-lg text-xs font-medium border bg-coral/10 border-coral/20 text-coral">
@@ -169,7 +180,7 @@ export const DriveFileModal: React.FC<DriveFileModalProps> = ({
             </Button>
             <Button
               onClick={onAddSelected}
-              disabled={selectedCount === 0 || isImporting}
+              disabled={selectedCount === 0 || isImporting || isLoading}
               className="flex-1 rounded-full bg-royal text-white text-xs font-medium hover:bg-royal/90 disabled:opacity-50"
             >
               {isImporting ? (

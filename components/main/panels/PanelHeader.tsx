@@ -14,21 +14,17 @@ export function PanelHeader({
   action,
 }: PanelHeaderProps) {
   return (
-    <header className="border-b border-divider px-6 py-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium text-royal">
-            {eyebrow}
-          </p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">
-            {title}
-          </h2>
-          <p className="mt-1 max-w-sm text-sm leading-relaxed text-helper">
-            {description}
-          </p>
-        </div>
-        {action}
+    <header className="border-b border-divider px-4 py-4 sm:px-6 sm:py-5">
+      <p className="text-xs font-medium text-royal">{eyebrow}</p>
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <h2 className="min-w-0 text-lg font-semibold tracking-tight text-ink sm:text-xl">
+          {title}
+        </h2>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
+      <p className="mt-1 max-w-sm text-sm leading-relaxed text-helper">
+        {description}
+      </p>
     </header>
   )
 }

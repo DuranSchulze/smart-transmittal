@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { LOGO_DATA_URL_PATTERN } from "./agency-logo"
 
 export const TransmittalItemSchema = z
   .object({
@@ -46,7 +47,8 @@ export const SenderInfoSchema = z
     mobile: z.string(),
     telephone: z.string(),
     email: z.string(),
-    logoBase64: z.string().nullable(),
+    logoUrl: z.string().url().refine(value => value.startsWith("https://"), "Logo URL must use HTTPS").nullable().optional(),
+    logoBase64: z.string().max(2_800_000).regex(LOGO_DATA_URL_PATTERN).nullable(),
   })
   .passthrough()
 
@@ -120,14 +122,15 @@ export const TransmittalPatchRequestSchema = z
 
 export const AgencyInputSchema = z
   .object({
-    name: z.string().trim().min(1, "Agency name is required"),
+    name: z.string().trim().min(1, "Agency name is required").max(160),
     addressLine1: z.string().nullable().optional(),
     addressLine2: z.string().nullable().optional(),
     website: z.string().nullable().optional(),
     telephoneNumber: z.string().nullable().optional(),
     contactNumber: z.string().nullable().optional(),
     email: z.string().nullable().optional(),
-    logoBase64: z.string().nullable().optional(),
+    logoUrl: z.string().url().max(2048).refine(value => value.startsWith("https://"), "Logo URL must use HTTPS").nullable().optional(),
+    logoBase64: z.string().max(2_800_000, "Logo must be 2 MB or smaller").regex(/^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/, "Use a PNG, JPG, WebP, or GIF logo").nullable().optional(),
   })
   .passthrough()
 

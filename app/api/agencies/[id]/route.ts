@@ -4,10 +4,11 @@ import { auth, db } from "@/server/auth"
 import { routeErrorResponse } from "@/server/route-error"
 import { ServiceError } from "@/server/service-error"
 import { validateBody } from "@/server/validation"
+import { prepareAgencyLogo } from "@/server/imagekit"
 import { withRouteMetrics } from "@/server/observability"
 
 export const runtime = "nodejs"
-export const maxDuration = 15
+export const maxDuration = 60
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -24,11 +25,12 @@ async function putHandler(request: NextRequest, context: RouteContext) {
 
     const existing = await db.agency.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true },
+      select: { id: true, logoUrl: true, logoFileId: true, logoBase64: true },
     })
     if (!existing) throw new ServiceError(404, "Agency not found")
 
     const agency = validation.data.agency
+    const logo = await prepareAgencyLogo(agency, existing)
     const updated = await db.agency.update({
       where: { id },
       data: {
@@ -39,10 +41,11 @@ async function putHandler(request: NextRequest, context: RouteContext) {
         telephoneNumber: agency.telephoneNumber || null,
         contactNumber: agency.contactNumber || null,
         email: agency.email || null,
-        logoBase64: agency.logoBase64 || null,
+        ...logo,
       },
     })
-    return NextResponse.json({ agency: updated })
+    const { userId, ...record } = updated
+    return NextResponse.json({ agency: { ...record, canManage: true } })
   } catch (error) {
     return routeErrorResponse(error, "Update agency error")
   }
@@ -57,7 +60,7 @@ async function deleteHandler(request: NextRequest, context: RouteContext) {
 
     const { id } = await context.params
     const existing = await db.agency.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id },
       select: { id: true },
     })
     if (!existing) throw new ServiceError(404, "Agency not found")

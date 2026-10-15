@@ -23,7 +23,7 @@ type FilesPanelProps = {
 
 export function FilesPanel(props: FilesPanelProps) {
   const importFromLink = () => {
-    if (props.smartInput.trim() && !props.isAnalyzingText) props.onSmartAnalysis()
+    if (props.smartInput.trim() && !props.isDocumentProcessing) props.onSmartAnalysis()
   }
 
   return (
@@ -33,7 +33,7 @@ export function FilesPanel(props: FilesPanelProps) {
         title="Files"
         description="Import, organize, and reopen every document connected to this transmittal."
         action={
-          <span className="rounded-full bg-wash px-2.5 py-1 text-xs font-medium text-royal">
+          <span className="shrink-0 whitespace-nowrap rounded-full border border-royal/15 bg-wash px-2.5 py-1 text-xs font-medium tabular-nums text-royal">
             {props.items.length} {props.items.length === 1 ? "file" : "files"}
           </span>
         }
@@ -45,7 +45,7 @@ export function FilesPanel(props: FilesPanelProps) {
             <div>
               <h3 className="text-xs font-medium text-caption">Quick import</h3>
               <p className="mt-0.5 text-xs text-helper">
-                Google Drive, Sheets, folders, PDFs, Word files, and images
+                Google Drive, Sheets, folders, PDFs, and Word files
               </p>
             </div>
             {props.isParsing ? (
@@ -58,6 +58,7 @@ export function FilesPanel(props: FilesPanelProps) {
           <div className="relative" data-tour="smart-input">
             <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-helper" />
             <Input
+              disabled={props.isDocumentProcessing}
               value={props.smartInput}
               onChange={(event) => props.onSmartInputChange(event.target.value)}
               onKeyDown={(event) => {
@@ -73,7 +74,7 @@ export function FilesPanel(props: FilesPanelProps) {
               data-tour="upload-files"
               size="sm"
               onClick={importFromLink}
-              disabled={!props.smartInput.trim() || props.isAnalyzingText}
+              disabled={!props.smartInput.trim() || props.isDocumentProcessing}
               className="absolute right-1.5 top-1.5 h-8 rounded-full px-3.5 text-xs"
             >
               {props.isAnalyzingText ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Import"}
@@ -93,7 +94,7 @@ export function FilesPanel(props: FilesPanelProps) {
             <Button
               variant="outline"
               onClick={props.onOpenDriveModal}
-              disabled={!props.isDriveReady || props.isDocumentProcessing}
+              disabled={props.isDocumentProcessing}
               className="h-10 rounded-full text-xs font-medium"
             >
               <HardDrive className="mr-2 h-4 w-4" /> Browse Drive

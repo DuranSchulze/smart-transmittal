@@ -74,7 +74,6 @@ export function useDocumentParsing({
     },
     [
       "application/pdf",
-      "image/*",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/msword",
     ],
@@ -115,7 +114,7 @@ export function useDocumentParsing({
     statusRef.current(
       fallbackCount
         ? `Imported ${addedCount} item(s) from ${results.length} uploaded file(s). Document # fallback was used for ${fallbackCount} file(s).`
-        : `Imported ${addedCount} item(s) from ${results.length} uploaded file(s) using AI extraction.`,
+        : `Imported ${addedCount} item(s) from ${results.length} uploaded file(s) using document extraction.`,
       "info",
     )
   }

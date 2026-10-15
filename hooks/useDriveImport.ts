@@ -6,28 +6,35 @@ import { resolveDocumentNumberWithFallback } from "../services/geminiService"
 import { parseDocument } from "../services/parse-api"
 import {
   extractFolderIdFromLink,
+  getFileMetadata,
   getFileContentAsBase64,
-  listDriveFiles,
+  listDriveFilePage,
   listFilesInFolder,
 } from "../services/googleDriveService"
+import { parseGoogleLink } from "../services/google-links"
+import { isImageDocument } from "../lib/import-file-policy"
 
-export type DriveFileMeta = { id: string; name: string; mimeType: string }
-export type DriveImportResult = { addedCount: number; fallbackCount: number }
+export type DriveFileMeta = { id: string; name: string; mimeType: string; resourceKey?: string }
+export type DriveImportResult = { addedCount: number; fallbackCount: number; failedCount?: number; failedFiles?: DriveFileMeta[]; skippedCount?: number; blockedImageCount?: number }
+export const describeDriveImport = (result: DriveImportResult) =>
+  `Imported ${result.addedCount} item(s).${result.blockedImageCount ? ` ${result.blockedImageCount} image(s) were skipped because images are not supported.` : ""}${result.skippedCount ? ` ${result.skippedCount} file(s) already in this transmittal were skipped.` : ""}${result.fallbackCount ? ` ${result.fallbackCount} file(s) need review because extraction was incomplete.` : ""}${result.failedCount ? ` Could not import ${result.failedFiles?.map(file => file.name).join(", ") || `${result.failedCount} file(s)`}. Check the connection and sharing permissions, then retry.` : ""}`
 
 type UseDriveImportOptions = {
   apiBaseUrl: string
   isDriveReady: boolean
   addItems: (items: TransmittalItem[]) => void
+  existingItems?: TransmittalItem[]
   onStatus: (message: string, type: "info" | "error") => void
 }
 
 const IMPORT_REMARK = "Imported from Google Drive"
-const ANALYZABLE_EXTENSION = /\.(pdf|png|jpe?g|webp|gif|bmp|tiff?)$/i
+const ANALYZABLE_EXTENSION = /\.(pdf)$/i
 const stripExtension = (name: string) => name.replace(/\.[^/.]+$/, "").trim()
-const sourceUrl = (id: string) => `https://drive.google.com/file/d/${id}/view`
+const sourceUrl = (id: string, resourceKey?: string) =>
+  `https://drive.google.com/file/d/${id}/view${resourceKey ? `?resourcekey=${encodeURIComponent(resourceKey)}` : ""}`
 const analyzable = (file: DriveFileMeta) =>
   file.mimeType === "application/pdf" ||
-  file.mimeType.startsWith("image/") ||
+  ["application/vnd.google-apps.document", "application/vnd.google-apps.presentation"].includes(file.mimeType) ||
   ANALYZABLE_EXTENSION.test(file.name)
 
 const normalizeNumber = (value: string) =>
@@ -61,13 +68,13 @@ const fallbackItem = (file: DriveFileMeta): TransmittalItem => ({
   description: stripExtension(file.name),
   remarks: IMPORT_REMARK,
   fileType: "gdrive",
-  fileSource: sourceUrl(file.id),
+  fileSource: sourceUrl(file.id, file.resourceKey),
 })
 
 export function useDriveImport({
   apiBaseUrl,
-  isDriveReady,
   addItems,
+  existingItems = [],
   onStatus,
 }: UseDriveImportOptions) {
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false)
@@ -79,14 +86,20 @@ export function useDriveImport({
   const [isBulkImporting, setIsBulkImporting] = useState(false)
   const [isDriveSelectionImporting, setIsDriveSelectionImporting] =
     useState(false)
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>()
+  const browseRequestRef = useRef(0)
+  const browseQueryRef = useRef("")
+  const importBusyRef = useRef(false)
+  const existingItemsRef = useRef(existingItems)
+  existingItemsRef.current = existingItems
   const statusRef = useRef(onStatus)
   statusRef.current = onStatus
 
   const analyze = useCallback(
     async (file: DriveFileMeta) => {
       if (!analyzable(file)) return { items: [fallbackItem(file)], fallback: true }
+      const { base64, mimeType } = await getFileContentAsBase64(file.id, file.mimeType, file.resourceKey)
       try {
-        const { base64, mimeType } = await getFileContentAsBase64(file.id)
         const result = await parseDocument(
           {
             content: base64,
@@ -116,7 +129,7 @@ export function useDriveImport({
             ? IMPORT_REMARK
             : item.remarks.trim() || IMPORT_REMARK,
           fileType: "gdrive",
-          fileSource: sourceUrl(file.id),
+          fileSource: sourceUrl(file.id, file.resourceKey),
         }))
         return { items, fallback: forceRemark }
       } catch {
@@ -128,68 +141,100 @@ export function useDriveImport({
 
   const importFilesWithAi = useCallback(
     async (files: DriveFileMeta[], label: string): Promise<DriveImportResult> => {
+      if (importBusyRef.current) throw new Error("An import is already running. Wait for it to finish.")
+      importBusyRef.current = true
       const items: TransmittalItem[] = []
       let fallbackCount = 0
-      for (let index = 0; index < files.length; index += 1) {
-        const file = files[index]
-        statusRef.current(
-          `${label}: analyzing file ${index + 1}/${files.length} (${file.name})...`,
-          "info",
-        )
-        const result = await analyze(file)
-        items.push(...result.items)
-        if (result.fallback) fallbackCount += 1
-      }
-      if (items.length) addItems(items)
-      return { addedCount: items.length, fallbackCount }
+      let failedCount = 0
+      const failedFiles: DriveFileMeta[] = []
+      let firstError = ""
+      const existingIds = new Set(existingItemsRef.current
+        .filter(item => item.fileType === "gdrive" && item.fileSource)
+        .map(item => parseGoogleLink(item.fileSource!)?.id))
+      const allUniqueFiles = Array.from(new Map(files
+        .filter(file => file.mimeType !== "application/vnd.google-apps.folder")
+        .map(file => [file.id, file])).values())
+      const eligibleFiles = allUniqueFiles.filter(file => !isImageDocument(file.mimeType, file.name))
+      const blockedImageCount = allUniqueFiles.length - eligibleFiles.length
+      const uniqueFiles = eligibleFiles.filter(file => !existingIds.has(file.id))
+      const skippedCount = eligibleFiles.length - uniqueFiles.length
+      try {
+        for (let index = 0; index < uniqueFiles.length; index += 1) {
+          const file = uniqueFiles[index]
+          statusRef.current(
+            `${label}: analyzing file ${index + 1}/${uniqueFiles.length} (${file.name})...`,
+            "info",
+          )
+          try {
+            const result = await analyze(file)
+            items.push(...result.items)
+            // Show each completed file while the rest of the batch is running.
+            if (result.items.length) addItems(result.items)
+            if (result.fallback) fallbackCount += 1
+          } catch (error) {
+            failedCount += 1
+            failedFiles.push(file)
+            firstError ||= error instanceof Error ? error.message : "Could not download file."
+          }
+        }
+        if (!items.length && !skippedCount) throw new Error(firstError || (blockedImageCount ? "Image imports are not supported. Use PDF or Word documents." : "No importable files found. Subfolders are not imported as documents."))
+        return { addedCount: items.length, fallbackCount, failedCount, failedFiles, skippedCount, blockedImageCount }
+      } finally { importBusyRef.current = false }
     },
     [addItems, analyze],
   )
 
   const importFolderLink = useCallback(
     async (link: string) => {
-      const folderId = extractFolderIdFromLink(link)
-      if (!folderId) throw new Error("Invalid Google Drive folder link.")
-      if (!isDriveReady) throw new Error("Drive access not available. Please sign in again.")
+      const parsedLink = parseGoogleLink(link)
+      let folderId = extractFolderIdFromLink(link)
+      if (!parsedLink) throw new Error("Paste a valid Google Drive folder link.")
+      let folderResourceKey = parsedLink.resourceKey
       setIsBulkImporting(true)
       try {
-        const files = await listFilesInFolder(folderId)
+        if (!folderId) {
+          const file = await getFileMetadata(parsedLink.id, parsedLink.resourceKey)
+          if (file.mimeType !== "application/vnd.google-apps.folder") throw new Error("This link points to a file. Bulk Import needs a folder link.")
+          folderId = file.id
+          folderResourceKey ||= file.resourceKey
+        }
+        const files = await listFilesInFolder(folderId, folderResourceKey)
         if (!files.length) {
-          statusRef.current("No files found in the selected Drive folder.", "info")
-          return
+          throw new Error("No files found in this folder. Only files directly inside the folder are imported.")
         }
         const result = await importFilesWithAi(files, "Drive bulk import")
-        statusRef.current(
-          result.fallbackCount
-            ? `Imported ${result.addedCount} item(s) from ${files.length} file(s). Document # fallback was used for ${result.fallbackCount} file(s).`
-            : `Imported ${result.addedCount} item(s) from ${files.length} file(s) using AI extraction.`,
-          "info",
-        )
+        statusRef.current(describeDriveImport(result), result.failedCount ? "error" : "info")
       } finally {
         setIsBulkImporting(false)
       }
     },
-    [importFilesWithAi, isDriveReady],
+    [importFilesWithAi],
   )
 
   const loadFiles = useCallback(
-    async (query?: string) => {
-      if (!isDriveReady) {
-        setDriveError("Drive access not available. Please sign in again.")
-        return
-      }
+    async (query?: string, pageToken?: string) => {
+      const requestId = ++browseRequestRef.current
       setIsDriveLoading(true)
       setDriveError("")
-      try {
-        setDriveFiles(await listDriveFiles(query?.trim() || undefined))
+      if (!pageToken) {
+        browseQueryRef.current = query?.trim() || ""
+        setDriveFiles([])
         setDriveSelected({})
-      } catch (error) {
-        setDriveError(error instanceof Error ? error.message : "Failed to load Drive files.")
-      } finally {
-        setIsDriveLoading(false)
+        setNextPageToken(undefined)
       }
-    },
-    [isDriveReady],
+      try {
+        const page = await listDriveFilePage(query?.trim() || undefined, pageToken)
+        if (requestId !== browseRequestRef.current) return
+        setDriveFiles(current => pageToken
+          ? Array.from(new Map([...current, ...page.files].map(file => [file.id, file])).values())
+          : page.files)
+        setNextPageToken(page.nextPageToken)
+      } catch (error) {
+        if (requestId === browseRequestRef.current) setDriveError(error instanceof Error ? error.message : "Failed to load Drive files.")
+      } finally {
+        if (requestId === browseRequestRef.current) setIsDriveLoading(false)
+      }
+    }, [],
   )
 
   const openModal = useCallback(() => {
@@ -214,13 +259,15 @@ export function useDriveImport({
     setIsDriveSelectionImporting(true)
     try {
       const result = await importFilesWithAi(selected, "Drive selection")
-      statusRef.current(
-        result.fallbackCount
-          ? `Added ${result.addedCount} item(s) from ${selected.length} selected file(s). Document # fallback was used for ${result.fallbackCount} file(s).`
-          : `Added ${result.addedCount} item(s) from ${selected.length} selected file(s) using AI extraction.`,
-        "info",
-      )
-      setIsDriveModalOpen(false)
+      statusRef.current(describeDriveImport(result), result.failedCount ? "error" : "info")
+      if (result.failedFiles?.length) {
+        setDriveSelected(Object.fromEntries(result.failedFiles.map(file => [file.id, true])))
+        setDriveError(`Could not import: ${result.failedFiles.map(file => file.name).join(", ")}. Check sharing permissions and retry the selected files.`)
+      } else {
+        setIsDriveModalOpen(false)
+      }
+    } catch (error) {
+      setDriveError(error instanceof Error ? error.message : "Import failed. Please retry.")
     } finally {
       setIsDriveSelectionImporting(false)
     }
@@ -235,6 +282,8 @@ export function useDriveImport({
     driveSelected,
     driveError,
     isDriveLoading,
+    hasMoreDriveFiles: Boolean(nextPageToken),
+    loadMoreDriveFiles: () => { if (nextPageToken && !isDriveLoading) void loadFiles(browseQueryRef.current, nextPageToken) },
     isBulkImporting,
     isDriveSelectionImporting,
     importFilesWithAi,

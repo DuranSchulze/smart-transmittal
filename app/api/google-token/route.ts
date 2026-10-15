@@ -70,9 +70,10 @@ async function getHandler(request: Request) {
       ? new Date(account.accessTokenExpiresAt)
       : new Date(0);
 
-    const isExpired = expiresAt < new Date();
+    const forceRefresh = new URL(request.url).searchParams.get("refresh") === "1";
+    const isExpired = expiresAt.getTime() <= Date.now() + 60_000 || !account.accessToken;
 
-    if (isExpired && account.refreshToken) {
+    if ((isExpired || forceRefresh) && account.refreshToken) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -114,7 +115,7 @@ async function getHandler(request: Request) {
             },
           });
 
-          return NextResponse.json({ accessToken: tokens.access_token });
+          return NextResponse.json({ accessToken: tokens.access_token, expiresAt: newExpiresAt.toISOString() }, { headers: { "Cache-Control": "no-store" } });
         }
 
         return NextResponse.json(
@@ -134,14 +135,14 @@ async function getHandler(request: Request) {
       }
     }
 
-    if (isExpired && !account.refreshToken) {
+    if ((isExpired || forceRefresh) && !account.refreshToken) {
       return NextResponse.json(
         { error: "Google token expired and no refresh token available. Please sign in again." },
         { status: 401 },
       );
     }
 
-    return NextResponse.json({ accessToken: account.accessToken });
+    return NextResponse.json({ accessToken: account.accessToken, expiresAt: expiresAt.toISOString() }, { headers: { "Cache-Control": "no-store" } });
   } catch (error: any) {
     console.error("Token fetch error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

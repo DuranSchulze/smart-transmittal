@@ -353,6 +353,8 @@ const AppContent: React.FC = () => {
     driveSelected,
     driveError,
     isDriveLoading,
+    hasMoreDriveFiles,
+    loadMoreDriveFiles,
     isBulkImporting,
     isDriveSelectionImporting,
     importFilesWithAi: importDriveFilesWithAi,
@@ -366,6 +368,7 @@ const AppContent: React.FC = () => {
     apiBaseUrl,
     isDriveReady: canUseDrive,
     addItems,
+    existingItems: data.items,
     onStatus: (message, type) => {
       setStatusMsg(message);
       setStatusType(type);
@@ -606,6 +609,10 @@ const AppContent: React.FC = () => {
 
   const {
     agencies,
+    isSavingAgency,
+    isUploadingAgencyLogo,
+    agencySaveError,
+    canManageSelectedAgency,
     isLoadingAgencies,
     agencyLoadError,
     loadAgencies,
@@ -896,7 +903,8 @@ const AppContent: React.FC = () => {
                 agencies={agencies}
                 isLoadingAgencies={isLoadingAgencies}
                 agencyLoadError={agencyLoadError}
-                onRetryAgencies={() => void loadAgencies(true)}
+                onRetryAgencies={() => void loadAgencies(true).catch(() => undefined)}
+                canManageSelectedAgency={canManageSelectedAgency}
                 selectedAgencyId={selectedAgencyId}
                 onSelectAgency={handleSelectAgency}
                 onOpenAgencyModal={openAgencyModal}
@@ -1026,6 +1034,7 @@ const AppContent: React.FC = () => {
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
         onImportDriveLink={handleBulkImportDriveLink}
+        processingMessage={statusMsg}
       />
       <DocxPreviewModal
         isOpen={isPreviewModalOpen}
@@ -1038,6 +1047,8 @@ const AppContent: React.FC = () => {
         files={driveFiles}
         searchValue={driveSearch}
         isLoading={isDriveLoading}
+        hasMore={hasMoreDriveFiles}
+        onLoadMore={loadMoreDriveFiles}
         error={driveError}
         selectedIds={driveSelected}
         isAllSelected={
@@ -1070,6 +1081,9 @@ const AppContent: React.FC = () => {
         isOpen={isAgencyModalOpen}
         onClose={() => setIsAgencyModalOpen(false)}
         mode={agencyModalMode}
+        isSaving={isSavingAgency}
+        isUploadingLogo={isUploadingAgencyLogo}
+        saveError={agencySaveError}
         isDriveReady={canUseDrive}
         draft={agencyDraft}
         onChange={setAgencyDraft}

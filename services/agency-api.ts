@@ -4,6 +4,7 @@ import { resolveApiUrl } from "./api-url"
 
 export type AgencyRecord = {
   id: string
+  canManage: boolean
   name: string
   addressLine1: string | null
   addressLine2: string | null
@@ -11,6 +12,8 @@ export type AgencyRecord = {
   telephoneNumber: string | null
   contactNumber: string | null
   email: string | null
+  logoUrl?: string | null
+  logoFileId?: string | null
   logoBase64: string | null
   createdAt?: string
   updatedAt: string

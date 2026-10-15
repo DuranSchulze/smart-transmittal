@@ -1,3 +1,6 @@
+import { parseGoogleLink } from "./google-links";
+import { isImageDocument } from "../lib/import-file-policy";
+
 // Google Drive Service - Uses access token from Better Auth session
 
 const AUTH_SERVER =
@@ -16,9 +19,11 @@ export class DriveTokenManager {
             : null;
     }
 
-    store(accessToken: string): void {
+    store(accessToken: string, expiresAt?: string): void {
         this.accessToken = accessToken;
-        this.expiresAt = Date.now() + TOKEN_CACHE_MS;
+        const parsedExpiry = expiresAt ? Date.parse(expiresAt) : NaN;
+        const serverExpiry = Number.isFinite(parsedExpiry) ? parsedExpiry - 60_000 : Infinity;
+        this.expiresAt = Math.min(Date.now() + TOKEN_CACHE_MS, serverExpiry);
     }
 
     clear(): void {
@@ -29,47 +34,69 @@ export class DriveTokenManager {
 
 export const driveTokenManager = new DriveTokenManager();
 
-// Fetch the Google access token from the server (uses session cookie)
+let tokenRequest: Promise<string> | null = null;
+let tokenGeneration = 0;
+
+// Share token requests across browsing and imports. Clearing on logout prevents
+// an older in-flight response from repopulating the next session's cache.
 export const getGoogleAccessToken = async (forceRefresh = false): Promise<string> => {
     const cachedToken = driveTokenManager.getValidToken();
-    if (!forceRefresh && cachedToken) {
-        return cachedToken;
-    }
-    
-    const response = await fetch(`${AUTH_SERVER}/api/google-token`, {
-        credentials: 'include',
-    });
-    
-    if (!response.ok) {
-        driveTokenManager.clear();
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error || 'Failed to get Google token');
-    }
-    
-    const data = await response.json();
-    driveTokenManager.store(data.accessToken);
-    return data.accessToken;
+    if (!forceRefresh && cachedToken) return cachedToken;
+    if (tokenRequest) return tokenRequest;
+    const generation = tokenGeneration;
+    const request = (async () => {
+        const response = await fetch(`${AUTH_SERVER}/api/google-token${forceRefresh ? "?refresh=1" : ""}`, {
+            credentials: "include", cache: "no-store", signal: AbortSignal.timeout(20_000),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (generation !== tokenGeneration) throw new Error("Google session changed. Please retry.");
+        if (!response.ok || typeof data.accessToken !== "string" || !data.accessToken) {
+            driveTokenManager.clear();
+            throw new Error(data.error || "Google Drive is disconnected. Please sign in again.");
+        }
+        driveTokenManager.store(data.accessToken, data.expiresAt);
+        return data.accessToken;
+    })();
+    tokenRequest = request;
+    try { return await request; }
+    finally { if (tokenRequest === request) tokenRequest = null; }
 };
 
-// Clear the cached token (call on logout)
 export const clearGoogleToken = () => {
+    tokenGeneration += 1;
+    tokenRequest = null;
     driveTokenManager.clear();
 };
 
-// Helper: fetch with auto-retry on 401 (refreshes token and retries once)
-const driveApiFetch = async (url: string, init?: RequestInit): Promise<Response> => {
-    const accessToken = await getGoogleAccessToken();
-    const headers = { ...init?.headers, 'Authorization': `Bearer ${accessToken}` };
-    const response = await fetch(url, { ...init, headers });
-    
-    if (response.status === 401) {
-        const freshToken = await getGoogleAccessToken(true);
-        const retryHeaders = { ...init?.headers, 'Authorization': `Bearer ${freshToken}` };
-        return fetch(url, { ...init, headers: retryHeaders });
+export class DriveAccessError extends Error {}
+
+export const driveApiFetch = async (url: string, init?: RequestInit): Promise<Response> => {
+    const request = async (token: string) => {
+        const headers = new Headers(init?.headers);
+        headers.set("Authorization", `Bearer ${token}`);
+        return fetch(url, { ...init, headers, signal: init?.signal || AbortSignal.timeout(45_000) });
+    };
+    let response = await request(await getGoogleAccessToken());
+    if (response.status === 401) response = await request(await getGoogleAccessToken(true));
+    if (!response.ok) {
+        if (response.status === 401) {
+            driveTokenManager.clear();
+            throw new DriveAccessError("Google Drive session expired. Please sign in again.");
+        }
+        if (response.status === 403 || response.status === 404) {
+            throw new DriveAccessError("Cannot access this Google file or folder. Check sharing permissions and the Google account you signed in with.");
+        }
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error?.error?.message || `Drive request failed (${response.status}). Please retry.`);
     }
-    
     return response;
 };
+
+export type DriveFile = { id: string; name: string; mimeType: string; resourceKey?: string };
+const FOLDER_MIME = "application/vnd.google-apps.folder";
+const escapeQuery = (value: string) => value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+const resourceHeaders = (id: string, resourceKey?: string) => resourceKey
+    ? { "X-Goog-Drive-Resource-Keys": `${id}/${resourceKey}` } : undefined;
 
 // Check if user has Google Drive access
 export const checkDriveAccess = async (): Promise<boolean> => {
@@ -81,13 +108,26 @@ export const checkDriveAccess = async (): Promise<boolean> => {
     }
 };
 
-export const getFileContentAsBase64 = async (fileId: string): Promise<{base64: string, mimeType: string}> => {
-    const response = await driveApiFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+export const getFileContentAsBase64 = async (fileId: string, sourceMimeType?: string, resourceKey?: string, purpose: "document" | "agency-logo" = "document"): Promise<{base64: string, mimeType: string}> => {
+    if (purpose === "document" && isImageDocument(sourceMimeType || "")) throw new Error("Image imports are not supported. Use PDF or Word documents.");
+    if (purpose === "agency-logo" && !/^image\/(png|jpeg|webp|gif)$/.test(sourceMimeType || "")) throw new Error("Choose a PNG, JPG, WebP, or GIF logo.");
+    const maxBytes = (purpose === "agency-logo" ? 2 : 18) * 1024 * 1024;
+    const isGoogleDocument = ["application/vnd.google-apps.document", "application/vnd.google-apps.presentation"].includes(sourceMimeType || "");
+    const url = isGoogleDocument
+        ? `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=application%2Fpdf`
+        : `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`;
+    const response = await driveApiFetch(url, { headers: resourceHeaders(fileId, resourceKey) });
+    if (Number(response.headers.get("content-length")) > maxBytes) throw new Error(`File is too large (maximum ${maxBytes / 1024 / 1024} MB).`);
 
     if (!response.ok) throw new Error(`Download failed: ${response.statusText}`);
 
     const blob = await response.blob();
-    const mimeType = blob.type;
+    if (blob.size > maxBytes) throw new Error(`File is too large (maximum ${maxBytes / 1024 / 1024} MB).`);
+    const responseMimeType = blob.type.split(";")[0].trim();
+    if (purpose === "document" && isImageDocument(responseMimeType)) throw new Error("Image imports are not supported. Use PDF or Word documents.");
+    const mimeType = isGoogleDocument ? "application/pdf"
+        : !responseMimeType || responseMimeType === "application/octet-stream"
+            ? sourceMimeType || "application/octet-stream" : responseMimeType;
 
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -101,125 +141,71 @@ export const getFileContentAsBase64 = async (fileId: string): Promise<{base64: s
 };
 
 export const extractFolderIdFromLink = (link: string): string | null => {
-    const regex = /(?:\/folders\/|\/d\/|[?&]id=)([a-zA-Z0-9_-]{15,})/;
-    const match = link.match(regex);
-    return match ? match[1] : null;
+    const parsed = parseGoogleLink(link);
+    return parsed?.kind === "folder" ? parsed.id : null;
 };
-
-export const isFolderLink = (link: string): boolean => {
-    return /\/folders\//.test(link);
-};
-
+export const isFolderLink = (link: string): boolean => parseGoogleLink(link)?.kind === "folder";
 export const extractFileIdFromLink = (link: string): string | null => {
-    // Matches: /file/d/ID, /document/d/ID, /spreadsheets/d/ID, /presentation/d/ID, ?id=ID
-    const regex = /(?:\/(?:file|document|spreadsheets|presentation)\/d\/|[?&]id=)([a-zA-Z0-9_-]{15,})/;
-    const match = link.match(regex);
-    return match ? match[1] : null;
+    const parsed = parseGoogleLink(link);
+    return parsed && parsed.kind !== "folder" ? parsed.id : null;
 };
 
-export const getFileMetadata = async (fileId: string): Promise<{ id: string; name: string; mimeType: string }> => {
-    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType&supportsAllDrives=true`;
-    const response = await driveApiFetch(url);
+export const getFileMetadata = async (fileId: string, resourceKey?: string): Promise<DriveFile> => {
+    const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,mimeType,resourceKey&supportsAllDrives=true`;
+    const response = await driveApiFetch(url, { headers: resourceHeaders(fileId, resourceKey) });
     if (!response.ok) {
         throw new Error(`Failed to get file metadata: ${response.status} ${response.statusText}`);
     }
     return response.json();
 };
 
-export const listFilesInFolder = async (folderId: string): Promise<Array<{name: string, id: string, mimeType: string}>> => {
-    try {
-        const query = `'${folderId}' in parents and trashed = false`;
-        const allFiles: Array<{ name: string; id: string; mimeType: string }> = [];
-        let pageToken: string | undefined;
+async function listPage(query: string, pageToken?: string, headers?: HeadersInit): Promise<{ files: DriveFile[]; nextPageToken?: string }> {
+    const url = new URL("https://www.googleapis.com/drive/v3/files");
+    url.searchParams.set("pageSize", "100");
+    url.searchParams.set("fields", "nextPageToken,files(id,name,mimeType,resourceKey)");
+    url.searchParams.set("orderBy", "modifiedTime desc");
+    url.searchParams.set("q", query);
+    url.searchParams.set("supportsAllDrives", "true");
+    url.searchParams.set("includeItemsFromAllDrives", "true");
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    const response = await driveApiFetch(url.toString(), { headers });
+    const data = await response.json();
+    return { files: data.files || [], nextPageToken: data.nextPageToken };
+}
 
-        do {
-            const url = new URL('https://www.googleapis.com/drive/v3/files');
-            url.searchParams.append('pageSize', '1000');
-            url.searchParams.append('fields', 'nextPageToken, files(id, name, mimeType)');
-            url.searchParams.append('q', query);
-            url.searchParams.append('supportsAllDrives', 'true');
-            url.searchParams.append('includeItemsFromAllDrives', 'true');
-            if (pageToken) url.searchParams.append('pageToken', pageToken);
-
-            const response = await driveApiFetch(url.toString(), {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (!response.ok) {
-                let errorDetails = '';
-                try {
-                    const errorJson = await response.json();
-                    errorDetails = errorJson?.error?.message ? `: ${errorJson.error.message}` : '';
-                } catch {
-                    // ignore JSON parsing errors
-                }
-                throw new Error(`Drive API Error: ${response.status} ${response.statusText}${errorDetails}`);
-            }
-
-            const data = await response.json();
-            allFiles.push(...(data.files || []));
-            pageToken = data.nextPageToken;
-        } while (pageToken);
-
-        return allFiles;
-
-    } catch (err: any) {
-        console.error("Error listing files", err);
-        throw new Error(err.message || "Failed to list files");
-    }
+export const listFilesInFolder = async (folderId: string, resourceKey?: string): Promise<DriveFile[]> => {
+    const query = `'${escapeQuery(folderId)}' in parents and trashed = false and mimeType != '${FOLDER_MIME}'`;
+    const files: DriveFile[] = [];
+    let token: string | undefined;
+    do {
+        const page = await listPage(query, token, resourceHeaders(folderId, resourceKey));
+        files.push(...page.files);
+        token = page.nextPageToken;
+    } while (token);
+    return files;
 };
 
-// List files in user's Drive root or search
-export const listDriveFiles = async (query?: string): Promise<Array<{name: string, id: string, mimeType: string}>> => {
-    const url = new URL('https://www.googleapis.com/drive/v3/files');
-    url.searchParams.append('pageSize', '50');
-    url.searchParams.append('fields', 'files(id, name, mimeType, modifiedTime)');
-    url.searchParams.append('orderBy', 'modifiedTime desc');
-    
-    if (query) {
-        url.searchParams.append('q', `name contains '${query}' and trashed = false`);
-    } else {
-        url.searchParams.append('q', 'trashed = false');
-    }
+export const listDriveFilePage = (query?: string, pageToken?: string) => listPage(
+    `trashed = false and mimeType != '${FOLDER_MIME}' and not mimeType contains 'image/'${query ? ` and name contains '${escapeQuery(query)}'` : ""}`,
+    pageToken,
+);
 
-    const response = await driveApiFetch(url.toString());
+// Compatibility for callers that only need the initial page.
+export const listDriveFiles = async (query?: string): Promise<DriveFile[]> =>
+    (await listDriveFilePage(query)).files;
 
-    if (!response.ok) {
-        throw new Error(`Drive API Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.files || [];
-};
-
-// List folders in a specific parent folder (or root if no parentId)
-export const listDriveFolders = async (
-    parentId?: string,
-    searchQuery?: string,
-): Promise<Array<{ id: string; name: string }>> => {
-    const url = new URL('https://www.googleapis.com/drive/v3/files');
-    url.searchParams.append('pageSize', '100');
-    url.searchParams.append('fields', 'files(id, name)');
-    url.searchParams.append('orderBy', 'name');
-    url.searchParams.append('supportsAllDrives', 'true');
-    url.searchParams.append('includeItemsFromAllDrives', 'true');
-
-    const conditions = ["mimeType = 'application/vnd.google-apps.folder'", "trashed = false"];
-    if (parentId) {
-        conditions.push(`'${parentId}' in parents`);
-    }
-    if (searchQuery) {
-        conditions.push(`name contains '${searchQuery}'`);
-    }
-    url.searchParams.append('q', conditions.join(' and '));
-
-    const response = await driveApiFetch(url.toString());
-    if (!response.ok) {
-        throw new Error(`Drive API Error: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.files || [];
+export const listDriveFolders = async (parentId?: string, searchQuery?: string): Promise<Array<{ id: string; name: string }>> => {
+    const conditions = [`mimeType = '${FOLDER_MIME}'`, "trashed = false"];
+    if (parentId) conditions.push(`'${escapeQuery(parentId)}' in parents`);
+    if (searchQuery) conditions.push(`name contains '${escapeQuery(searchQuery)}'`);
+    const files: DriveFile[] = [];
+    let token: string | undefined;
+    do {
+        const page = await listPage(conditions.join(" and "), token);
+        files.push(...page.files);
+        token = page.nextPageToken;
+    } while (token);
+    return files;
 };
 
 // Upload a file (Blob) to Google Drive in the specified folder

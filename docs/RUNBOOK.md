@@ -17,6 +17,8 @@ npm install
 
 Create an `.env` file in the project root and set the values required for your environment.
 
+Use `.env.example` as a template. Agency logo uploads require `IMAGEKIT_URL_ENDPOINT` and server-only `IMAGEKIT_PRIVATE_KEY`; `IMAGEKIT_PUBLIC_KEY` is also documented for the account. Follow [ImageKit setup](IMAGEKIT_SETUP.md) to add the URL columns and migrate existing logos before deploying the integration.
+
 ### Core App And Auth
 
 - `DATABASE_URL`

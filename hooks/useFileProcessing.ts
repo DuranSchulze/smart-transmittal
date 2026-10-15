@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import * as mammoth from 'mammoth';
+import { isImageDocument } from '../lib/import-file-policy';
 
 // Helper to read file as base64 (used for fast path or fallback)
 const readFileAsBase64 = (file: File): Promise<string> => {
@@ -19,9 +20,6 @@ const readFileAsBase64 = (file: File): Promise<string> => {
         reader.readAsDataURL(file);
     });
 };
-
-const sleep = (ms: number): Promise<void> =>
-    new Promise((resolve) => setTimeout(resolve, ms));
 
 // Robust Image Resizer
 export const resizeImage = async (file: File, maxSize: number = 800): Promise<string> => {
@@ -126,6 +124,7 @@ export const useFileProcessing = <T>(
 
     // Filter valid types
     const validFiles = files.filter(file => {
+        if (isImageDocument(file.type, file.name)) return false;
         return acceptedTypes.some(type => {
             if (type.endsWith('/*')) {
                 const base = type.split('/')[0];
@@ -151,7 +150,6 @@ export const useFileProcessing = <T>(
         const fileErrors: string[] = [];
         // Keep parsing requests sequential to avoid bursting AI API quotas.
         const CONCURRENT_LIMIT = 1;
-        const REQUEST_DELAY_MS = 1200;
         const queue = [...validFiles];
 
         const processSingleFile = async (file: File) => {
@@ -192,9 +190,6 @@ export const useFileProcessing = <T>(
                 console.error(`Error processing file ${file.name}:`, err);
                 fileErrors.push(msg);
             } finally {
-                if (REQUEST_DELAY_MS > 0 && queue.length > 0) {
-                    await sleep(REQUEST_DELAY_MS);
-                }
                 // Update progress regardless of success/failure
                 completedCount++;
                 setProgress({ current: completedCount, total: totalFiles });

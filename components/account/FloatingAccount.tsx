@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from "react";
+import {
+  GEMINI_MODEL_OPTIONS,
+  getGeminiModelLabel,
+} from "@/lib/gemini-models";
 
 
 interface FloatingAccountProps {
@@ -27,6 +31,17 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
   const [isLoadingAiSettings, setIsLoadingAiSettings] = useState(false);
   const [isSavingAiKey, setIsSavingAiKey] = useState(false);
   const [isDeletingAiKey, setIsDeletingAiKey] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("");
+  const [isSavingAiModel, setIsSavingAiModel] = useState(false);
+
+  const modelChoices =
+    selectedModel &&
+    !GEMINI_MODEL_OPTIONS.some((option) => option.id === selectedModel)
+      ? [
+          ...GEMINI_MODEL_OPTIONS,
+          { id: selectedModel, label: selectedModel, description: "Custom model" },
+        ]
+      : GEMINI_MODEL_OPTIONS;
 
   const loadAiSettings = async () => {
     if (!apiBaseUrl) return;
@@ -41,6 +56,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to load AI settings.");
       }
       setHasCustomGeminiKey(Boolean(payload?.hasCustomGeminiKey));
+      setSelectedModel(String(payload?.geminiModel || ""));
     } catch (error: any) {
       setAiStatus(error?.message || "Failed to load AI settings.");
     } finally {
@@ -66,6 +82,31 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
     };
   }, []);
 
+  const saveAiModel = async (model: string) => {
+    if (!model) return;
+    setIsSavingAiModel(true);
+    setAiStatus("");
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/user-ai-settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ geminiModel: model }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to save model.");
+      }
+      const savedModel = String(payload?.geminiModel || model);
+      setSelectedModel(savedModel);
+      setAiStatus(`AI parsing now uses ${getGeminiModelLabel(savedModel)}.`);
+    } catch (error: any) {
+      setAiStatus(error?.message || "Failed to save model.");
+    } finally {
+      setIsSavingAiModel(false);
+    }
+  };
+
   const saveAiKey = async () => {
     const key = geminiApiKey.trim();
     if (!key) {
@@ -86,6 +127,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to save AI key.");
       }
       setHasCustomGeminiKey(Boolean(payload?.hasCustomGeminiKey));
+      setSelectedModel(String(payload?.geminiModel || ""));
       setGeminiApiKey("");
       setAiStatus(
         payload?.warning
@@ -112,6 +154,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to remove AI key.");
       }
       setHasCustomGeminiKey(false);
+      setSelectedModel(String(payload?.geminiModel || ""));
       setGeminiApiKey("");
       setAiStatus("Personal Gemini API key removed. Using system key.");
     } catch (error: any) {
@@ -231,48 +274,78 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
           />
           <div className="relative z-[70] w-full max-w-md overflow-hidden rounded-2xl border border-divider bg-white shadow-feature">
             <div className="p-6 border-b border-divider">
-              <h3 className="text-sm font-semibold text-ink">
-                Gemini API Key
-              </h3>
+              <h3 className="text-sm font-semibold text-ink">AI Settings</h3>
               <p className="mt-1 text-xs text-helper">
-                Optional. If set, your personal key is preferred over the system
-                key during AI parsing.
+                Choose the Gemini model used for AI parsing and, optionally, add
+                a personal API key.
               </p>
             </div>
             <div className="p-6 space-y-4">
-              <div className="text-xs text-caption">
-                Current source:{" "}
-                <span className="font-medium text-ink">
-                  {isLoadingAiSettings
-                    ? "Loading..."
-                    : hasCustomGeminiKey
-                      ? "Personal key"
-                      : "System key"}
-                </span>
-              </div>
-
               <div className="space-y-2">
                 <label
-                  htmlFor="gemini-api-key"
+                  htmlFor="gemini-model"
                   className="text-xs font-medium text-caption"
                 >
-                  New / Replace Key
+                  Gemini model
                 </label>
-                <input
-                  id="gemini-api-key"
-                  type={showApiKey ? "text" : "password"}
-                  value={geminiApiKey}
-                  onChange={(e) => setGeminiApiKey(e.target.value)}
-                  placeholder="Paste Gemini API key"
-                  className="w-full rounded-lg border border-divider bg-white px-3 py-2 text-xs text-ink outline-none focus:border-royal"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowApiKey((prev) => !prev)}
-                  className="text-xs font-medium text-helper hover:text-royal"
+                <select
+                  id="gemini-model"
+                  value={selectedModel}
+                  disabled={isLoadingAiSettings || isSavingAiModel}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setSelectedModel(value);
+                    void saveAiModel(value);
+                  }}
+                  className="w-full rounded-lg border border-divider bg-white px-3 py-2 text-xs text-ink outline-none focus:border-royal disabled:opacity-50"
                 >
-                  {showApiKey ? "Hide Key" : "Show Key"}
-                </button>
+                  {modelChoices.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-helper">
+                  Applies to every AI parse across the app — Drive imports,
+                  uploads, and link analysis.
+                </p>
+              </div>
+
+              <div className="space-y-4 border-t border-divider pt-4">
+                <div className="text-xs text-caption">
+                  Key source:{" "}
+                  <span className="font-medium text-ink">
+                    {isLoadingAiSettings
+                      ? "Loading..."
+                      : hasCustomGeminiKey
+                        ? "Personal key"
+                        : "System key"}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="gemini-api-key"
+                    className="text-xs font-medium text-caption"
+                  >
+                    New / Replace Key
+                  </label>
+                  <input
+                    id="gemini-api-key"
+                    type={showApiKey ? "text" : "password"}
+                    value={geminiApiKey}
+                    onChange={(e) => setGeminiApiKey(e.target.value)}
+                    placeholder="Paste Gemini API key"
+                    className="w-full rounded-lg border border-divider bg-white px-3 py-2 text-xs text-ink outline-none focus:border-royal"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey((prev) => !prev)}
+                    className="text-xs font-medium text-helper hover:text-royal"
+                  >
+                    {showApiKey ? "Hide Key" : "Show Key"}
+                  </button>
+                </div>
               </div>
 
               {aiStatus ? (

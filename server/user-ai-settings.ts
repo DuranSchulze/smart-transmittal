@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { db } from "@/server/auth";
+import { DEFAULT_GEMINI_MODEL, normalizeGeminiModel } from "@/lib/gemini-models";
 
 const ENCRYPTION_ENV_KEY = "APP_SETTINGS_ENCRYPTION_KEY";
 const ALGORITHM = "aes-256-gcm";
@@ -61,16 +62,39 @@ export const isLikelyGeminiApiKey = (value: string): boolean => {
   return /^[A-Za-z0-9_\-]{20,200}$/.test(trimmed);
 };
 
+export const getSystemDefaultGeminiModel = (): string =>
+  process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
+
 export const getUserAiKeyMetadata = async (userId: string) => {
   const settings = await db.userAiSettings.findUnique({
     where: { userId },
-    select: { updatedAt: true },
+    select: { geminiApiKeyEncrypted: true, geminiModel: true, updatedAt: true },
   });
 
+  const defaultGeminiModel = getSystemDefaultGeminiModel();
+  const selectedGeminiModel = normalizeGeminiModel(settings?.geminiModel);
+
   return {
-    hasCustomGeminiKey: Boolean(settings),
+    hasCustomGeminiKey: Boolean(settings?.geminiApiKeyEncrypted),
+    geminiModel: selectedGeminiModel ?? defaultGeminiModel,
+    defaultGeminiModel,
     updatedAt: settings?.updatedAt ?? null,
   };
+};
+
+/**
+ * The user's explicitly selected Gemini model, or `null` when they have not
+ * chosen one (the caller should fall back to the system default).
+ */
+export const getUserGeminiModel = async (
+  userId: string,
+): Promise<string | null> => {
+  const settings = await db.userAiSettings.findUnique({
+    where: { userId },
+    select: { geminiModel: true },
+  });
+
+  return normalizeGeminiModel(settings?.geminiModel);
 };
 
 export const getDecryptedUserGeminiApiKey = async (

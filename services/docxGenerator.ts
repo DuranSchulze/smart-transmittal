@@ -14,24 +14,8 @@ import {
     convertInchesToTwip
 } from "docx";
 import { AppData } from "../types";
+import { loadLogoBytes } from "./logo-image";
 import { formatExportText } from "./exportText";
-
-// Helper to convert base64 to Uint8Array safely
-const base64ToUint8Array = (base64: string) => {
-    try {
-        const data = base64.includes(',') ? base64.split(',')[1] : base64;
-        const binaryString = window.atob(data);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        return bytes;
-    } catch (e) {
-        console.error("Failed to convert base64 to bytes", e);
-        return new Uint8Array(0);
-    }
-};
 
 const FONT_FAMILY = "Arial";
 const COLOR_BORDER = "CBD5E1";
@@ -121,16 +105,12 @@ const createFloatingSignatoryBox = (label: string, name: string, role: string | 
 
 export const generateTransmittalDocx = async (data: AppData): Promise<Blob> => {
     let logoRun: ImageRun | TextRun = new TextRun({ text: "[LOGO]", bold: true, size: 24, color: COLOR_TEXT_MUTED });
-    if (data.sender.logoBase64) {
-        try {
-            const imageBytes = base64ToUint8Array(data.sender.logoBase64);
-            if (imageBytes.length > 0) {
-                logoRun = new ImageRun({
-                    data: imageBytes,
-                    transformation: { width: 150, height: 60 }
-                });
-            }
-        } catch(e) { console.warn("Logo add failed", e); }
+    const imageBytes = await loadLogoBytes(data.sender);
+    if (imageBytes) {
+        logoRun = new ImageRun({
+            data: imageBytes,
+            transformation: { width: 150, height: 60 }
+        });
     }
 
     const headerTable = new Table({

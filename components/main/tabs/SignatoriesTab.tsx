@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import { Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Combobox,
@@ -133,6 +135,13 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
   notedByRoleSuggestions,
   onUpdateSignatory,
 }) => {
+  const setCurrentTime = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    onUpdateSignatory("timeReleased", formatTime24hTo12h(`${hours}:${minutes}`));
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h2 className="text-sm font-semibold text-ink mb-4">
@@ -191,14 +200,27 @@ export const SignatoriesTab: React.FC<SignatoriesTabProps> = ({
           <Label className="text-xs font-medium text-caption ml-2">
             Time Released
           </Label>
-          <Input
-            type="time"
-            step={60}
-            value={parseTimeTo24h(signatories.timeReleased)}
-            onChange={(e) =>
-              onUpdateSignatory("timeReleased", formatTime24hTo12h(e.target.value))
-            }
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="time"
+              step={60}
+              value={parseTimeTo24h(signatories.timeReleased)}
+              onChange={(e) =>
+                onUpdateSignatory("timeReleased", formatTime24hTo12h(e.target.value))
+              }
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={setCurrentTime}
+              className="h-9 shrink-0 rounded-full px-3 text-xs"
+              title="Use the current time"
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Now
+            </Button>
+          </div>
         </div>
       </div>
     </div>

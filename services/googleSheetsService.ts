@@ -1,6 +1,7 @@
 // Google Sheets Service - Appends transmittal rows to a linked spreadsheet
 
-import { getGoogleAccessToken } from "./googleDriveService";
+import { parseGoogleLink } from "./google-links";
+import { driveApiFetch, getGoogleAccessToken } from "./googleDriveService";
 import { storage } from "../lib/storage";
 
 /** Persist the linked spreadsheet ID in localStorage */
@@ -20,10 +21,8 @@ export const clearLinkedSheetId = () => {
 
 /** Extract spreadsheet ID from a Google Sheets URL */
 export const extractSheetIdFromUrl = (url: string): string | null => {
-  // Matches: /spreadsheets/d/SPREADSHEET_ID
-  const regex = /\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
+  const parsed = parseGoogleLink(url);
+  return parsed?.kind === "sheet" ? parsed.id : null;
 };
 
 /** Get the spreadsheet title to confirm it's accessible */
@@ -89,7 +88,7 @@ const ensureHeaders = async (
 
 /** Check if a URL is a Google Sheets link */
 export const isSheetUrl = (url: string): boolean => {
-  return /docs\.google\.com\/spreadsheets\/d\//.test(url);
+  return parseGoogleLink(url)?.kind === "sheet";
 };
 
 /**
@@ -99,11 +98,13 @@ export const isSheetUrl = (url: string): boolean => {
 export const readSheetRows = async (
   spreadsheetId: string,
 ): Promise<{ headers: string[]; rows: string[][] }> => {
-  const accessToken = await getGoogleAccessToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1?majorDimension=ROWS`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const metadata = await driveApiFetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`);
+  const info = await metadata.json();
+  const title = info.sheets?.[0]?.properties?.title;
+  if (!title) throw new Error("Spreadsheet has no worksheets.");
+  const range = encodeURIComponent(`'${String(title).replace(/'/g, "''")}'`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?majorDimension=ROWS`;
+  const response = await driveApiFetch(url);
   if (!response.ok) {
     throw new Error(`Cannot read spreadsheet: ${response.status}`);
   }

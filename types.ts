@@ -38,6 +38,8 @@ export interface SenderInfo {
   mobile: string;
   telephone: string;
   email: string;
+  /** URL persisted for saved logos. Inline data is only a pending/legacy upload. */
+  logoUrl?: string | null;
   logoBase64: string | null;
 }
 

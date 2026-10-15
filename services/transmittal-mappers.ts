@@ -82,7 +82,8 @@ export function mapSavedTransmittalToAppData(
       mobile: text(sender.mobile),
       telephone: text(sender.telephone),
       email: text(sender.email),
-      logoBase64: text(sender.logoBase64) || null,
+      logoUrl: text(sender.logoUrl) || null,
+      logoBase64: text(sender.logoUrl) ? null : text(sender.logoBase64) || null,
     },
     signatories: {
       preparedBy: transmittal.preparedBy || "",

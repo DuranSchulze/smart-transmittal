@@ -9,6 +9,7 @@ import { uploadFileToDrive } from "../services/googleDriveService"
 import { friendlyError } from "../lib/friendlyError"
 import { createCsv } from "../lib/csv"
 import { createExportFileName } from "../lib/export-file"
+import { createPdfExportSource, waitForPdfImages } from "../lib/pdf-layout"
 
 type StatusType = "info" | "error"
 
@@ -135,18 +136,16 @@ export function useExport({ data, onStatus }: UseExportOptions) {
   const exportPdf = useCallback(async () => {
     if (isGeneratingPdf) return
     setIsGeneratingPdf(true)
-    let previewWrapper: HTMLElement | null = null
-    let previousTransform = ""
+    let cleanup: (() => void) | undefined
     try {
       await waitForExportLayout()
       const element = document.getElementById("print-container")
       if (!element) throw new Error("Printable document is not available.")
 
-      previewWrapper = element.parentElement
-      if (previewWrapper) {
-        previousTransform = previewWrapper.style.transform
-        previewWrapper.style.transform = "none"
-      }
+      const exportSource = createPdfExportSource(element)
+      cleanup = exportSource.cleanup
+      await waitForPdfImages(exportSource.element)
+      await waitForExportLayout()
 
       const { default: html2pdf } = await import("html2pdf.js")
       const fileName = createExportFileName(
@@ -154,16 +153,19 @@ export function useExport({ data, onStatus }: UseExportOptions) {
         `_${timestamp()}`,
         "pdf",
       )
-      const worker = html2pdf()
-        .from(element)
-        .set({
-          margin: 0.5,
-          filename: fileName,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-        })
-        .toPdf()
+      // The package declarations omit its supported pagebreak plugin options.
+      const options = {
+        margin: 0.5,
+        filename: fileName,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" as const },
+        pagebreak: {
+          mode: ["css", "legacy"],
+          avoid: [".transmittal-items tr", ".transmittal-closing", ".avoid-break"],
+        },
+      }
+      const worker = html2pdf().from(exportSource.element).set(options).toPdf()
 
       await worker.get("pdf").then((value: unknown) => {
         const pdf = value as PdfDocument
@@ -187,7 +189,7 @@ export function useExport({ data, onStatus }: UseExportOptions) {
     } catch (error) {
       statusRef.current(friendlyError(error, "Couldn't generate the PDF."), "error")
     } finally {
-      if (previewWrapper) previewWrapper.style.transform = previousTransform
+      cleanup?.()
       setIsGeneratingPdf(false)
     }
   }, [data.project.transmittalNumber, isGeneratingPdf, showChoice])

@@ -5,7 +5,6 @@ import {
   Upload,
   X,
   FileText,
-  Image as ImageIcon,
   Cloud,
   Loader2,
   Trash2,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadFileToDrive } from "@/services/googleDriveService";
+import { isImageDocument } from "@/lib/import-file-policy";
 import { FolderPickerModal } from "./FolderPickerModal";
 
 interface FileUploadModalProps {
@@ -48,13 +48,12 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
 
   const acceptedTypes = [
     "application/pdf",
-    "image/",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/msword",
   ];
 
   const isAccepted = (file: File) =>
-    acceptedTypes.some((t) =>
+    !isImageDocument(file.type, file.name) && acceptedTypes.some((t) =>
       t.endsWith("/") ? file.type.startsWith(t) : file.type === t,
     );
 
@@ -65,7 +64,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
       setSelectedFiles(valid);
       if (rejectedCount > 0) {
         setRejectedNotice(
-          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF, Word (.doc/.docx), and image files are supported.`,
+          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF and Word (.doc/.docx) files are supported. Images are not allowed.`,
         );
       }
     }
@@ -77,7 +76,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
       const rejectedCount = newFiles.length - valid.length;
       if (rejectedCount > 0) {
         setRejectedNotice(
-          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF, Word (.doc/.docx), and image files are supported.`,
+          `${rejectedCount} file${rejectedCount !== 1 ? "s were" : " was"} skipped — only PDF and Word (.doc/.docx) files are supported. Images are not allowed.`,
         );
         setTimeout(() => setRejectedNotice(null), 6000);
       }
@@ -171,8 +170,6 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
   };
 
   const getFileIcon = (file: File) => {
-    if (file.type.startsWith("image/"))
-      return <ImageIcon className="w-4 h-4 text-cobalt" />;
     if (
       file.type === "application/msword" ||
       file.type ===
@@ -201,7 +198,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 Upload Files
               </h3>
               <p className="text-xs text-helper mt-1">
-                PDF, Word (.doc/.docx), and images supported
+                PDF and Word (.doc/.docx) supported. Images are not allowed.
               </p>
             </div>
             <Button
@@ -251,7 +248,7 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".pdf,.doc,.docx,image/*"
+                accept=".pdf,.doc,.docx"
                 className="hidden"
                 onChange={handleFileInput}
               />

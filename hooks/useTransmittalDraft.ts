@@ -44,6 +44,7 @@ export const createInitialTransmittalData = (): AppData => ({
     mobile: "0917 892 2337",
     telephone: "(028) 372 5023 • (02) 8478-5826",
     email: "info@filepino.com",
+    logoUrl: null,
     logoBase64: null,
   },
   signatories: {

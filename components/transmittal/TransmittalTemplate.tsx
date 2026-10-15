@@ -1,3 +1,4 @@
+import { getAgencyLogo } from "@/lib/agency-logo";
 import React, { useRef, useEffect, useState, useCallback } from "react";
 
 import {
@@ -391,15 +392,16 @@ export const TransmittalTemplate: React.FC<Props> = ({
                 .grab-handle:active { cursor: grabbing; }
             `}</style>
 
-      <table className="w-full h-full border-collapse">
-        <thead className="h-[1.5in]">
+      <table className="transmittal-layout w-full h-full border-collapse">
+        <thead className="transmittal-header h-[1.5in]">
           <tr>
             <td colSpan={100} className="align-top p-0 border-none">
-              <div className="flex justify-between items-start pt-6 px-10 h-[1.5in] box-border overflow-hidden w-full">
+              <div className="transmittal-brand flex justify-between items-start pt-6 px-10 h-[1.5in] box-border overflow-hidden w-full">
                 <div className="w-1/3">
-                  {data.sender.logoBase64 ? (
+                  {getAgencyLogo(data.sender) ? (
                     <img
-                      src={data.sender.logoBase64}
+                      src={getAgencyLogo(data.sender)!}
+                      crossOrigin="anonymous"
                       alt="Logo"
                       className="h-20 object-contain object-left"
                     />
@@ -438,11 +440,11 @@ export const TransmittalTemplate: React.FC<Props> = ({
               colSpan={100}
               className={`align-top pt-2 pb-8 border-none ${isGeneratingPdf ? "px-0" : "px-10"}`}
             >
-              <h1 className="text-center font-serif text-2xl font-bold mb-6 tracking-wide text-slate-900 uppercase">
+              <h1 className="transmittal-title text-center font-serif text-2xl font-bold mb-6 tracking-wide text-slate-900 uppercase">
                 Transmittal Form
               </h1>
 
-              <div className="border border-slate-300 text-sm mb-8">
+              <div className="transmittal-meta border border-slate-300 text-sm mb-8">
                 {metaRows.map((row, i) => (
                   <div
                     key={i}
@@ -492,11 +494,11 @@ export const TransmittalTemplate: React.FC<Props> = ({
                         />
                       </svg>
                       <span className="text-sm font-bold">Drop files to upload</span>
-                      <span className="text-[10px] font-medium text-blue-500">PDF, Word, or images</span>
+                      <span className="text-[10px] font-medium text-blue-500">PDF or Word files</span>
                     </div>
                   </div>
                 )}
-                <table className="w-full border-collapse border border-slate-300 text-sm table-fixed">
+                <table className="transmittal-items w-full border-collapse border border-slate-300 text-sm table-fixed">
                   <thead>
                     <tr>
                       <ResizableHeader
@@ -739,7 +741,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
                 </div>
               )}
 
-              <div className="mt-4">
+              <div className="transmittal-closing mt-4">
                 <div className="pt-6 border-t border-slate-200">
                   <div className="grid grid-cols-3 gap-12 mb-8 avoid-break">
                     <div>

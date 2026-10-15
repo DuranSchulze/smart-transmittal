@@ -18,7 +18,8 @@ import {
   isSheetUrl,
   readSheetRows,
 } from "../services/googleSheetsService"
-import { friendlyError } from "../lib/friendlyError"
+import { parseGoogleLink } from "../services/google-links"
+import { describeDriveImport } from "./useDriveImport"
 
 type StatusType = "info" | "error"
 
@@ -41,33 +42,33 @@ const findColumn = (headers: string[], ...names: string[]) => {
 }
 
 export function useSmartImport({
-  isDriveReady,
   addItems,
   importDriveFiles,
   onStatus,
 }: UseSmartImportOptions) {
   const [smartInput, setSmartInput] = useState("")
   const [isAnalyzingText, setIsAnalyzingText] = useState(false)
+  const busyRef = useRef(false)
   const statusRef = useRef(onStatus)
   statusRef.current = onStatus
 
   const analyze = useCallback(async () => {
     const input = smartInput.trim()
-    if (!input || isAnalyzingText) return
+    if (!input || busyRef.current) return
+    const parsedLink = parseGoogleLink(input)
+    if (!parsedLink) {
+      statusRef.current("Paste a valid Google Drive, Docs, Slides, or Sheets link.", "error")
+      return
+    }
+    busyRef.current = true
 
     setIsAnalyzingText(true)
     statusRef.current("Analyzing link...", "info")
     try {
-      if (!isDriveReady) {
-        statusRef.current(
-          "Drive access not available. Please sign in again.",
-          "error",
-        )
-        return
-      }
-
       let totalAdded = 0
       let fallbackCount = 0
+      let failedCount = 0
+      let driveResult: DriveImportResult | undefined
 
       if (isSheetUrl(input)) {
         const sheetId = extractSheetIdFromUrl(input)
@@ -130,11 +131,13 @@ export function useSmartImport({
         }
         statusRef.current("Listing files from folder...", "info")
         const result = await importDriveFiles(
-          await listFilesInFolder(folderId),
+          await listFilesInFolder(folderId, parsedLink.resourceKey),
           "Drive folder import",
         )
         totalAdded = result.addedCount
+        driveResult = result
         fallbackCount = result.fallbackCount
+        failedCount = result.failedCount || 0
       } else {
         const fileId = extractFileIdFromLink(input)
         if (!fileId) {
@@ -145,35 +148,36 @@ export function useSmartImport({
           return
         }
         statusRef.current("Fetching file info...", "info")
+        const file = await getFileMetadata(fileId, parsedLink.resourceKey)
+        file.resourceKey ||= parsedLink.resourceKey
         const result = await importDriveFiles(
-          [await getFileMetadata(fileId)],
-          "Drive file import",
+          file.mimeType === "application/vnd.google-apps.folder"
+            ? await listFilesInFolder(file.id, file.resourceKey) : [file],
+          "Drive link import",
         )
         totalAdded = result.addedCount
+        driveResult = result
         fallbackCount = result.fallbackCount
+        failedCount = result.failedCount || 0
       }
 
-      if (totalAdded > 0) {
-        setSmartInput("")
+      if (totalAdded > 0 || driveResult?.skippedCount) {
+        if (!failedCount) setSmartInput("")
         statusRef.current(
-          fallbackCount > 0
-            ? `Imported ${totalAdded} item(s). Document # fallback was used for ${fallbackCount} file(s).`
-            : `Imported ${totalAdded} item(s) using AI extraction.`,
-          "info",
+          describeDriveImport(driveResult || { addedCount: totalAdded, fallbackCount, failedCount }),
+          failedCount ? "error" : "info",
         )
       }
     } catch (error) {
       statusRef.current(
-        friendlyError(
-          error,
-          "Smart analysis failed. Check your Drive connection and try again.",
-        ),
+        error instanceof Error ? error.message : "Import failed. Check your connection and try again.",
         "error",
       )
     } finally {
+      busyRef.current = false
       setIsAnalyzingText(false)
     }
-  }, [addItems, importDriveFiles, isAnalyzingText, isDriveReady, smartInput])
+  }, [addItems, importDriveFiles, smartInput])
 
   return { smartInput, setSmartInput, isAnalyzingText, analyze }
 }
