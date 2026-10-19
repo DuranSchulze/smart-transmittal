@@ -1,5 +1,8 @@
 "use client";
 
+import { useTransmittalQa } from "../../hooks/useTransmittalQa";
+import { QaPanel } from "./panels/QaPanel";
+
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { HelpCircle, Pencil, Eye, Loader2, AlertCircle, CheckCircle2, X as XIcon } from "lucide-react";
 import { FloatingAccount } from "../account/FloatingAccount";
@@ -123,6 +126,7 @@ const resolveSessionErrorNotice = (error: unknown): string | undefined => {
 const AppContent: React.FC = () => {
   const [statusMsg, setStatusMsg] = useState("");
   const [statusType, setStatusType] = useState<"info" | "error">("info");
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const [authSignInError, setAuthSignInError] = useState<string>();
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [activeSection, setActiveSection] =
@@ -137,6 +141,8 @@ const AppContent: React.FC = () => {
   const {
     isGeneratingPdf,
     isGeneratingDocx,
+    isPrinting,
+    printTransmittal,
     isPreviewModalOpen,
     setIsPreviewModalOpen,
     docxPreviewHtml,
@@ -205,6 +211,8 @@ const AppContent: React.FC = () => {
     (typeof window !== "undefined" ? window.location.origin : "") ||
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
     "";
+  const qa = useTransmittalQa(data, setData, apiBaseUrl);
+  useEffect(() => { qa.resetSession(); }, [session?.user?.id, qa.resetSession]);
   const sessionErrorNotice = resolveSessionErrorNotice(sessionError);
   const {
     isTourOpen,
@@ -366,6 +374,8 @@ const AppContent: React.FC = () => {
     addSelected: handleDriveAddSelected,
   } = useDriveImport({
     apiBaseUrl,
+    onDocumentReady: qa.registerDocument,
+    getDocumentSession: qa.getSessionToken,
     isDriveReady: canUseDrive,
     addItems,
     existingItems: data.items,
@@ -509,6 +519,8 @@ const AppContent: React.FC = () => {
     parseProgress,
   } = useDocumentParsing({
     apiBaseUrl,
+    onDocumentReady: qa.registerDocument,
+    getDocumentSession: qa.getSessionToken,
     addItems,
     mergeHeader: mergeHeaderData,
     onStatus: (message, type) => {
@@ -522,24 +534,52 @@ const AppContent: React.FC = () => {
     void processUploadedFiles(files);
   };
 
-  const handleSaveTransmittal = async () => {
-    const isEditing = Boolean(activeTransmittalId);
+  const saveTransmittal = async (): Promise<boolean> => {
     if (transmittalNumberValidation.isDuplicate) {
       setActiveSection("project");
       setStatusMsg(transmittalNumberValidation.message);
       setStatusType("error");
       setTimeout(() => setStatusMsg(""), 5000);
-      return;
+      return false;
     }
     try {
       await saveNow({ isDraft: false, silent: false }, { force: true });
-      setStatusMsg(isEditing ? "Transmittal updated" : "Transmittal saved");
-      setStatusType("info");
+      return true;
     } catch (e: any) {
       setStatusMsg(friendlyError(e, "Couldn't save your transmittal."));
       setStatusType("error");
+      setTimeout(() => setStatusMsg(""), 7000);
+      return false;
     }
+  };
+
+  const handleSaveTransmittal = async () => {
+    const isEditing = Boolean(activeTransmittalId);
+    if (!(await saveTransmittal())) return;
+    setStatusMsg(isEditing ? "Transmittal updated" : "Transmittal saved");
+    setStatusType("info");
     setTimeout(() => setStatusMsg(""), 5000);
+  };
+
+  const printRequestRef = useRef(false);
+
+  const handlePrintTransmittal = async () => {
+    if (printRequestRef.current) return;
+    printRequestRef.current = true;
+    setIsPreparingPrint(true);
+    const isEditing = Boolean(activeTransmittalId);
+    try {
+      // Printing is an explicit action: persist the latest edits first so the
+      // paper copy always matches a saved transmittal.
+      if (!(await saveTransmittal())) return;
+      setStatusMsg(isEditing ? "Transmittal updated" : "Transmittal saved");
+      setStatusType("info");
+      setTimeout(() => setStatusMsg(""), 5000);
+      await printTransmittal();
+    } finally {
+      printRequestRef.current = false;
+      setIsPreparingPrint(false);
+    }
   };
 
   const handleRetryAutoSave = async () => {
@@ -603,6 +643,7 @@ const AppContent: React.FC = () => {
     setData,
     hasFormData,
     isDocumentProcessing,
+    onDraftReplaced: qa.resetSession,
     userId: session?.user?.id,
     apiBaseUrl,
   });
@@ -794,6 +835,8 @@ const AppContent: React.FC = () => {
           onExportPdf={handlePrint}
           onExportDocx={handleDownloadDocx}
           onExportCsv={handleExportCSV}
+          onPrint={handlePrintTransmittal}
+          isPrinting={isPreparingPrint || isPrinting}
           onSendEmail={handleSendEmail}
           onPreviewDocx={handlePreviewDocx}
           onOpenAiSettings={() => window.dispatchEvent(new Event("open-ai-settings"))}
@@ -897,6 +940,8 @@ const AppContent: React.FC = () => {
                 onAddManualItem={handleManualAdd}
               />
             )}
+
+            {activeSection === "qa" && <QaPanel qa={qa} isImporting={isDocumentProcessing} />}
 
             {activeSection === "sender" && (
               <SenderTab

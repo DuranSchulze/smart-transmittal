@@ -7,7 +7,7 @@ export async function waitForPdfImages(element: HTMLElement) {
   await Promise.all(Array.from(element.querySelectorAll("img")).map(image => new Promise<void>((resolve, reject) => {
     if (image.complete) {
       if (image.naturalWidth > 0) resolve()
-      else reject(new Error("Could not load the company logo for PDF export."))
+      else reject(new Error("Could not load the company logo for the document."))
       return
     }
     const finish = (error?: Error) => {
@@ -17,8 +17,8 @@ export async function waitForPdfImages(element: HTMLElement) {
       error ? reject(error) : resolve()
     }
     const loaded = () => finish()
-    const failed = () => finish(new Error("Could not load the company logo for PDF export."))
-    const timer = setTimeout(() => finish(new Error("Company logo took too long to load. Please retry the PDF export.")), 15_000)
+    const failed = () => finish(new Error("Could not load the company logo for the document."))
+    const timer = setTimeout(() => finish(new Error("Company logo took too long to load. Please retry.")), 15_000)
     image.addEventListener("load", loaded, { once: true })
     image.addEventListener("error", failed, { once: true })
   })))

@@ -4,6 +4,7 @@ import {
   Building2,
   Check,
   ClipboardCheck,
+  ListChecks,
   FileStack,
   FolderOpen,
   PanelLeftClose,
@@ -16,6 +17,7 @@ import type { WorkspaceProgress, WorkspaceSection } from "../../../types"
 
 const sections = [
   { key: "files", label: "Files", icon: FolderOpen },
+  { key: "qa", label: "QA", icon: ListChecks },
   { key: "sender", label: "Sender", icon: Building2 },
   { key: "project", label: "Project", icon: FileStack },
   { key: "recipient", label: "Recipient", icon: UserRound },
@@ -50,7 +52,7 @@ export function WorkspaceNavigation({
         isMinimized ? "w-[68px]" : "w-[84px]"
       }`}
     >
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-1.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {sections.map(({ key, label, icon: Icon }) => {
           const active = activeSection === key
           return (

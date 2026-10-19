@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import * as mammoth from 'mammoth';
+import { extractQaWord } from '../services/qa-document-content';
 import { isImageDocument } from '../lib/import-file-policy';
 
 // Helper to read file as base64 (used for fast path or fallback)
@@ -106,7 +106,7 @@ export const resizeImage = async (file: File, maxSize: number = 800): Promise<st
 
 // Main Hook
 export const useFileProcessing = <T>(
-    onProcess: (base64: string, mimeType: string, fileName: string) => Promise<T>, 
+    onProcess: (base64: string, mimeType: string, fileName: string, textComplete?: boolean) => Promise<T>,
     acceptedTypes: string[] = ['application/pdf']
 ) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -156,6 +156,7 @@ export const useFileProcessing = <T>(
             try {
                 let base64String = "";
                 let mimeType = file.type;
+                let textComplete: boolean | undefined;
 
                 const isDocx =
                     file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -169,8 +170,9 @@ export const useFileProcessing = <T>(
                 } else if (isDocx) {
                     // Gemini doesn't accept docx binary — extract text via mammoth
                     const arrayBuffer = await file.arrayBuffer();
-                    const result = await mammoth.extractRawText({ arrayBuffer });
-                    base64String = result.value.trim();
+                    const result = await extractQaWord(arrayBuffer);
+                    base64String = result.content.trim();
+                    textComplete = result.textComplete;
                     mimeType = 'text/plain';
                     if (!base64String) throw new Error('No text could be extracted from the Word document.');
                 } else {
@@ -179,7 +181,7 @@ export const useFileProcessing = <T>(
 
                 if (!base64String) throw new Error("Empty content");
 
-                const data = await onProcess(base64String, mimeType, file.name);
+                const data = await onProcess(base64String, mimeType, file.name, textComplete);
 
                 if (onItemComplete) {
                     onItemComplete(data);

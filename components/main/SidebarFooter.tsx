@@ -53,6 +53,8 @@ export interface SidebarMenuBarProps {
   onExportPdf: () => void;
   onExportDocx: () => void;
   onExportCsv?: () => void;
+  onPrint: () => void;
+  isPrinting?: boolean;
   onSendEmail?: () => void;
   onPreviewDocx?: () => void;
   onSignOut: () => void;
@@ -77,6 +79,8 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
   onExportPdf,
   onExportDocx,
   onExportCsv,
+  onPrint,
+  isPrinting = false,
   onSendEmail,
   onPreviewDocx,
   onSignOut,
@@ -106,12 +110,18 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
       if (key === "s") {
         event.preventDefault();
         onSaveTransmittal();
+        return;
+      }
+
+      if (key === "p") {
+        event.preventDefault();
+        onPrint();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onOpenFileLibrary, onSaveTransmittal]);
+  }, [onOpenFileLibrary, onPrint, onSaveTransmittal]);
 
   return (
     <>
@@ -190,6 +200,14 @@ export const SidebarMenuBar: React.FC<SidebarMenuBarProps> = ({
                   Export as CSV
                 </DropdownMenuItem>
               )}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={onPrint} disabled={isPrinting}>
+                <Printer className="mr-2 h-4 w-4" />
+                {isPrinting ? "Preparing to print..." : "Print"}
+                <DropdownMenuShortcut>⌘/Ctrl+P</DropdownMenuShortcut>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             {onSendEmail && (
               <>

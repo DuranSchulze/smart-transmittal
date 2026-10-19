@@ -67,6 +67,7 @@ export const createInitialTransmittalData = (): AppData => ({
     disclaimer:
       "For documentation purposes, please return the signed transmittal form to our office via email or courier at your earliest convenience.",
   },
+  qa: { requirements: [] },
   notes: "",
   agencyId: null,
   items: [],
@@ -163,6 +164,7 @@ export function draftReducer(state: AppData, action: DraftAction): AppData {
 
 export function hasTransmittalFormData(data: AppData): boolean {
   return (
+    Boolean(data.qa?.requirements.length) ||
     data.items.length > 0 ||
     [
       data.recipient.to,

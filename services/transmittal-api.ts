@@ -4,6 +4,7 @@ import { resolveApiUrl } from "./api-url"
 
 export type SavedTransmittalRecord = {
   id: string
+  qa?: unknown
   isOwner?: boolean
   isDraft?: boolean
   transmittalNumber?: string | null

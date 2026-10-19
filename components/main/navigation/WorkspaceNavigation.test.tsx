@@ -4,6 +4,7 @@ import { WorkspaceNavigation } from "./WorkspaceNavigation"
 
 const progress = {
   files: true,
+  qa: false,
   sender: true,
   project: false,
   recipient: false,

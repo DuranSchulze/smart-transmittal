@@ -93,6 +93,7 @@ model Verification {
 model Transmittal {
   id      String  @id @default(cuid())
   userId  String
+  qa      Json?
   notes   String
   isDraft Boolean @default(false)
 
@@ -166,6 +167,7 @@ model TransmittalItem {
   remarks        String
   fileType       String?
   fileSource     String?
+  document       Json?
 
   transmittal Transmittal @relation(fields: [transmittalId], references: [id], onDelete: Cascade)
 

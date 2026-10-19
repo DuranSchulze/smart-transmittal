@@ -135,7 +135,7 @@ const ComboBox = ({
         className={`${className} pr-6`}
       />
       <button
-        className="absolute right-0 top-0 text-slate-400 hover:text-slate-600 p-1"
+        className="absolute right-0 top-0 text-slate-400 hover:text-slate-600 p-1 print:hidden"
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={-1}
       >
@@ -208,7 +208,7 @@ const ResizableHeader = ({
       {label}
       {onResizeDelta && (
         <div
-          className="absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize z-10 group"
+          className="absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize z-10 group print:hidden"
           onMouseDown={handleMouseDown}
         >
           <div className="absolute right-0 top-1 bottom-1 w-px bg-slate-300 group-hover:bg-brand-500 group-active:bg-brand-600 transition-colors" />
@@ -316,7 +316,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
 
   const containerClass = isGeneratingPdf
     ? "bg-white text-slate-800 w-full font-sans relative"
-    : "bg-white text-slate-800 w-full max-w-[8.5in] mx-auto shadow-2xl font-sans relative min-h-[11in]";
+    : "bg-white text-slate-800 w-full max-w-[8.5in] mx-auto shadow-2xl font-sans relative min-h-[11in] print:min-h-0 print:shadow-none";
 
   const cellClass =
     "border border-slate-300 px-2 py-2 align-top text-sm break-words whitespace-normal [overflow-wrap:anywhere] relative transition-all duration-200";
@@ -606,7 +606,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => onAdjustItemQty(index, -1)}
-                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150"
+                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150 print:hidden"
                                   aria-label="Decrease quantity"
                                 >
                                   −
@@ -622,7 +622,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => onAdjustItemQty(index, 1)}
-                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150"
+                                  className="w-6 h-6 rounded-lg bg-slate-100/80 text-slate-500 text-xs font-bold flex items-center justify-center hover:bg-brand-100 hover:text-brand-700 active:scale-90 transition-all duration-150 print:hidden"
                                   aria-label="Increase quantity"
                                 >
                                   +
@@ -722,7 +722,7 @@ export const TransmittalTemplate: React.FC<Props> = ({
               </div>
 
               {!isGeneratingPdf && (
-                <div className="w-full flex justify-center gap-4 mb-6">
+                <div className="w-full flex justify-center gap-4 mb-6 print:hidden">
                   <button
                     onClick={onAddItem}
                     className="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-full shadow-sm hover:border-brand-400 hover:text-brand-600 hover:shadow-md transition-all text-xs font-bold text-slate-500 uppercase tracking-wide"

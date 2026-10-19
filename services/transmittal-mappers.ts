@@ -1,3 +1,4 @@
+import { DocumentReferenceSchema, QaStateSchema } from "../lib/transmittal-qa"
 import type { AppData, TransmittalItem } from "../types"
 import { normalizeTransmittalNumber, stripTransmittalPrefix } from "../lib/utils"
 import { resolveDocumentNumberWithFallback } from "./geminiService"
@@ -26,7 +27,9 @@ export function mapSavedTransmittalToAppData(
   const footerNotes = asRecord(transmittal.footerNotes)
   const recipient = transmittal.recipients?.[0]
 
+  const qa = QaStateSchema.safeParse(transmittal.qa)
   return {
+    qa: qa.success ? qa.data : { requirements: [] },
     agencyId: transmittal.agencyId || transmittal.agency?.id || null,
     recipient: {
       to: recipient?.recipientName || "",
@@ -72,6 +75,7 @@ export function mapSavedTransmittalToAppData(
             ? item.fileType
             : undefined,
         fileSource: text(item.fileSource) || undefined,
+        document: DocumentReferenceSchema.safeParse(item.document).success ? DocumentReferenceSchema.parse(item.document) : undefined,
       } satisfies TransmittalItem
     }),
     sender: {
@@ -124,6 +128,7 @@ export function createCopiedDraft(
   })
   return {
     ...data,
+    qa: { requirements: data.qa?.requirements || [] },
     agencyId: source.isOwner === false ? null : data.agencyId,
     project: {
       ...data.project,

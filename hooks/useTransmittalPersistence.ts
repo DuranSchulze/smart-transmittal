@@ -44,6 +44,7 @@ type UseTransmittalPersistenceOptions = {
   isDocumentProcessing: boolean
   userId?: string
   apiBaseUrl: string
+  onDraftReplaced?: () => void
 }
 
 export function useTransmittalPersistence({
@@ -53,6 +54,7 @@ export function useTransmittalPersistence({
   isDocumentProcessing,
   userId,
   apiBaseUrl,
+  onDraftReplaced,
 }: UseTransmittalPersistenceOptions) {
   const [activeTransmittalId, setActiveTransmittalId] = useState<string | null>(
     null,
@@ -205,13 +207,14 @@ export function useTransmittalPersistence({
       await autoSave.waitForIdle()
       const match = await getTransmittal(id, apiBaseUrl)
 
+      onDraftReplaced?.()
       setData(mapSavedTransmittalToAppData(match))
       activeIdRef.current = id
       setActiveTransmittalId(id)
       setActiveTransmittalIsDraft(Boolean(match.isDraft))
       autoSave.markClean()
     },
-    [apiBaseUrl, autoSave, setData],
+    [apiBaseUrl, autoSave, setData, onDraftReplaced],
   )
 
   const copyTransmittal = useCallback(
@@ -225,6 +228,7 @@ export function useTransmittalPersistence({
       const nextNumber =
         (await requestNextNumber()) ||
         createInitialTransmittalData().project.transmittalNumber
+      onDraftReplaced?.()
       setData(createCopiedDraft(match, nextNumber))
       activeIdRef.current = null
       setActiveTransmittalId(null)
@@ -232,7 +236,7 @@ export function useTransmittalPersistence({
       autoSave.markClean()
       autoSave.markDirty()
     },
-    [apiBaseUrl, autoSave, requestNextNumber, setData],
+    [apiBaseUrl, autoSave, requestNextNumber, setData, onDraftReplaced],
   )
 
   const removeTransmittal = useCallback(
@@ -240,6 +244,7 @@ export function useTransmittalPersistence({
       if (activeIdRef.current === id) await autoSave.waitForIdle()
       await deleteTransmittal(id, apiBaseUrl)
       if (activeIdRef.current === id) {
+        onDraftReplaced?.()
         setData(createInitialTransmittalData())
         activeIdRef.current = null
         setActiveTransmittalId(null)
@@ -248,18 +253,19 @@ export function useTransmittalPersistence({
         await assignNextNumber(true)
       }
     },
-    [apiBaseUrl, assignNextNumber, autoSave, setData],
+    [apiBaseUrl, assignNextNumber, autoSave, setData, onDraftReplaced],
   )
 
   const resetDraft = useCallback(async () => {
     await autoSave.waitForIdle()
+    onDraftReplaced?.()
     setData(createInitialTransmittalData())
     activeIdRef.current = null
     setActiveTransmittalId(null)
     setActiveTransmittalIsDraft(false)
     autoSave.markClean()
     await assignNextNumber(true)
-  }, [assignNextNumber, autoSave, setData])
+  }, [assignNextNumber, autoSave, setData, onDraftReplaced])
 
   const newTransmittal = useCallback(async () => {
     if (autoSave.dirty) {

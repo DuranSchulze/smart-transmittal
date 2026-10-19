@@ -62,6 +62,7 @@ const assertGeneratedBlob = (blob: unknown, format: string): Blob => {
 export function useExport({ data, onStatus }: UseExportOptions) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [isGeneratingDocx, setIsGeneratingDocx] = useState(false)
+  const [isPrinting, setIsPrinting] = useState(false)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [docxPreviewHtml, setDocxPreviewHtml] = useState("")
   const [exportChoiceOpen, setExportChoiceOpen] = useState(false)
@@ -194,6 +195,56 @@ export function useExport({ data, onStatus }: UseExportOptions) {
     }
   }, [data.project.transmittalNumber, isGeneratingPdf, showChoice])
 
+  const printTransmittal = useCallback(async () => {
+    if (isPrinting) return
+    setIsPrinting(true)
+    let cleanup: (() => void) | undefined
+    try {
+      await waitForExportLayout()
+      const element = document.getElementById("print-container")
+      if (!element) throw new Error("Printable document is not available.")
+
+      const exportSource = createPdfExportSource(element)
+      cleanup = exportSource.cleanup
+      const host = exportSource.element.parentElement
+      if (!host) throw new Error("Printable document is not available.")
+      host.classList.add("transmittal-print-host")
+
+      await waitForPdfImages(exportSource.element)
+      await waitForExportLayout()
+
+      const teardown = () => {
+        if (tornDown) return
+        tornDown = true
+        window.clearTimeout(fallbackTimer)
+        document.body.classList.remove("transmittal-printing")
+        cleanup?.()
+        cleanup = undefined
+        window.removeEventListener("afterprint", teardown)
+      }
+
+      let tornDown = false
+      let fallbackTimer = 0
+
+      window.addEventListener("afterprint", teardown)
+      document.body.classList.add("transmittal-printing")
+      window.print()
+
+      // Safari returns before the print dialog closes, so wait for afterprint
+      // instead of removing the print copy as soon as print() returns.
+      if (!tornDown) fallbackTimer = window.setTimeout(teardown, 60_000)
+    } catch (error) {
+      statusRef.current(
+        friendlyError(error, "Couldn't print the transmittal."),
+        "error",
+      )
+      document.body.classList.remove("transmittal-printing")
+      cleanup?.()
+    } finally {
+      setIsPrinting(false)
+    }
+  }, [isPrinting])
+
   const exportDocx = useCallback(async () => {
     if (isGeneratingDocx) return
     setIsGeneratingDocx(true)
@@ -257,6 +308,8 @@ export function useExport({ data, onStatus }: UseExportOptions) {
   return {
     isGeneratingPdf,
     isGeneratingDocx,
+    isPrinting,
+    printTransmittal,
     isPreviewModalOpen,
     setIsPreviewModalOpen,
     docxPreviewHtml,

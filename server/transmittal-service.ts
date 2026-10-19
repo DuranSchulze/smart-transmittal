@@ -93,6 +93,7 @@ const buildNestedData = (data: AppData) => ({
       remarks: item.remarks,
       fileType: item.fileType || null,
       fileSource: item.fileSource || null,
+      document: item.document ? item.document as Prisma.InputJsonValue : undefined,
     })),
   },
 })
@@ -107,6 +108,7 @@ const buildScalarData = (
 ) => {
   const department = data.project.department.trim()
   return {
+    qa: data.qa ? data.qa as Prisma.InputJsonValue : undefined,
     notes: data.notes,
     isDraft: input.isDraft,
     transmittalNumber: input.storedTransmittalNumber,

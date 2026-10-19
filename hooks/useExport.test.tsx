@@ -77,4 +77,29 @@ describe("useExport", () => {
     expect(onStatus).toHaveBeenCalledWith(expect.any(String), "error")
     expect(result.current.exportChoiceOpen).toBe(false)
   })
+
+  it("prints a standalone copy of the document and cleans it up afterwards", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined)
+    const onStatus = vi.fn()
+    const { result } = renderHook(() => useExport({ data: createInitialTransmittalData(), onStatus }))
+
+    await act(async () => {
+      await result.current.printTransmittal()
+    })
+
+    expect(printSpy).toHaveBeenCalledOnce()
+    expect(document.body.classList.contains("transmittal-printing")).toBe(true)
+    const host = document.querySelector(".transmittal-print-host")
+    expect(host?.querySelector(".pdf-export")).not.toBeNull()
+    expect(host?.querySelector("#print-container")).toBeNull()
+    expect(onStatus).not.toHaveBeenCalled()
+
+    act(() => {
+      window.dispatchEvent(new Event("afterprint"))
+    })
+
+    expect(document.body.classList.contains("transmittal-printing")).toBe(false)
+    expect(document.querySelector(".transmittal-print-host")).toBeNull()
+    expect(result.current.isPrinting).toBe(false)
+  })
 })

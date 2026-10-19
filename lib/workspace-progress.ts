@@ -4,6 +4,7 @@ const hasValue = (value: string | null | undefined) => Boolean(value?.trim())
 
 export const computeWorkspaceProgress = (data: AppData): WorkspaceProgress => ({
   files: data.items.length > 0,
+  qa: false,
   sender: hasValue(data.sender.agencyName),
   project:
     hasValue(data.project.projectName) &&

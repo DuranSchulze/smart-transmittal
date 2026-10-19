@@ -1,3 +1,4 @@
+import { DocumentReferenceSchema, QaStateSchema } from "./transmittal-qa"
 import { z } from "zod"
 import { LOGO_DATA_URL_PATTERN } from "./agency-logo"
 
@@ -11,6 +12,7 @@ export const TransmittalItemSchema = z
     remarks: z.string(),
     fileType: z.enum(["upload", "gdrive", "link"]).optional(),
     fileSource: z.string().optional(),
+    document: DocumentReferenceSchema.optional(),
   })
   .passthrough()
 
@@ -89,6 +91,7 @@ export const TransmissionMethodSchema = z
 
 export const AppDataSchema = z
   .object({
+    qa: QaStateSchema.optional(),
     recipient: RecipientInfoSchema,
     project: ProjectInfoSchema,
     items: z.array(TransmittalItemSchema),

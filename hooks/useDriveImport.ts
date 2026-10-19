@@ -14,6 +14,9 @@ import {
 import { parseGoogleLink } from "../services/google-links"
 import { isImageDocument } from "../lib/import-file-policy"
 
+import type { DocumentReference, QaDocumentContent } from "../lib/transmittal-qa"
+import { prepareQaContent } from "../services/qa-document-content"
+
 export type DriveFileMeta = { id: string; name: string; mimeType: string; resourceKey?: string }
 export type DriveImportResult = { addedCount: number; fallbackCount: number; failedCount?: number; failedFiles?: DriveFileMeta[]; skippedCount?: number; blockedImageCount?: number }
 export const describeDriveImport = (result: DriveImportResult) =>
@@ -21,6 +24,8 @@ export const describeDriveImport = (result: DriveImportResult) =>
 
 type UseDriveImportOptions = {
   apiBaseUrl: string
+  getDocumentSession?: () => number
+  onDocumentReady?: (document: DocumentReference, content: QaDocumentContent) => void
   isDriveReady: boolean
   addItems: (items: TransmittalItem[]) => void
   existingItems?: TransmittalItem[]
@@ -28,12 +33,12 @@ type UseDriveImportOptions = {
 }
 
 const IMPORT_REMARK = "Imported from Google Drive"
-const ANALYZABLE_EXTENSION = /\.(pdf)$/i
+const ANALYZABLE_EXTENSION = /\.(pdf|docx|doc)$/i
 const stripExtension = (name: string) => name.replace(/\.[^/.]+$/, "").trim()
 const sourceUrl = (id: string, resourceKey?: string) =>
   `https://drive.google.com/file/d/${id}/view${resourceKey ? `?resourcekey=${encodeURIComponent(resourceKey)}` : ""}`
 const analyzable = (file: DriveFileMeta) =>
-  file.mimeType === "application/pdf" ||
+  ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"].includes(file.mimeType) ||
   ["application/vnd.google-apps.document", "application/vnd.google-apps.presentation"].includes(file.mimeType) ||
   ANALYZABLE_EXTENSION.test(file.name)
 
@@ -60,7 +65,13 @@ const fallbackNumber = (file: Pick<DriveFileMeta, "id" | "name">) => {
     : `DRV-${suffix}`
 }
 
+const driveDocument = (file: DriveFileMeta): DocumentReference => ({
+  id: `drive:${file.id}`, name: file.name, mimeType: file.mimeType,
+  driveId: file.id, resourceKey: file.resourceKey, revision: crypto.randomUUID(),
+})
+
 const fallbackItem = (file: DriveFileMeta): TransmittalItem => ({
+  document: driveDocument(file),
   id: file.id,
   qty: "1",
   noOfItems: "1",
@@ -73,6 +84,8 @@ const fallbackItem = (file: DriveFileMeta): TransmittalItem => ({
 
 export function useDriveImport({
   apiBaseUrl,
+  onDocumentReady,
+  getDocumentSession,
   addItems,
   existingItems = [],
   onStatus,
@@ -97,20 +110,27 @@ export function useDriveImport({
 
   const analyze = useCallback(
     async (file: DriveFileMeta) => {
+      const session = getDocumentSession?.()
       if (!analyzable(file)) return { items: [fallbackItem(file)], fallback: true }
       const { base64, mimeType } = await getFileContentAsBase64(file.id, file.mimeType, file.resourceKey)
+      const document = driveDocument(file)
       try {
+        const prepared = await prepareQaContent(base64, mimeType || file.mimeType, file.name)
+        document.mimeType = prepared.mimeType
+        if (getDocumentSession?.() !== session) return { items: [], fallback: false }
+        onDocumentReady?.(document, prepared)
         const result = await parseDocument(
           {
-            content: base64,
-            mimeType: mimeType || file.mimeType || "application/pdf",
-            isText: false,
+            content: prepared.content,
+            mimeType: prepared.mimeType,
+            isText: prepared.isText,
             fileName: file.name,
           },
           apiBaseUrl,
         )
+        if (getDocumentSession?.() !== session) return { items: [], fallback: false }
         if (!result.items.length) {
-          return { items: [fallbackItem(file)], fallback: true }
+          return { items: [{ ...fallbackItem(file), document }], fallback: true }
         }
         const forceRemark = Boolean(result.error) || (result.fallbackCount || 0) > 0
         const items = result.items.map((item, index): TransmittalItem => ({
@@ -129,20 +149,23 @@ export function useDriveImport({
             ? IMPORT_REMARK
             : item.remarks.trim() || IMPORT_REMARK,
           fileType: "gdrive",
+          document,
           fileSource: sourceUrl(file.id, file.resourceKey),
         }))
         return { items, fallback: forceRemark }
       } catch {
-        return { items: [fallbackItem(file)], fallback: true }
+        if (getDocumentSession?.() !== session) return { items: [], fallback: false }
+        return { items: [{ ...fallbackItem(file), document }], fallback: true }
       }
     },
-    [apiBaseUrl],
+    [apiBaseUrl, onDocumentReady, getDocumentSession],
   )
 
   const importFilesWithAi = useCallback(
     async (files: DriveFileMeta[], label: string): Promise<DriveImportResult> => {
       if (importBusyRef.current) throw new Error("An import is already running. Wait for it to finish.")
       importBusyRef.current = true
+      const session = getDocumentSession?.()
       const items: TransmittalItem[] = []
       let fallbackCount = 0
       let failedCount = 0
@@ -160,6 +183,7 @@ export function useDriveImport({
       const skippedCount = eligibleFiles.length - uniqueFiles.length
       try {
         for (let index = 0; index < uniqueFiles.length; index += 1) {
+          if (getDocumentSession?.() !== session) break
           const file = uniqueFiles[index]
           statusRef.current(
             `${label}: analyzing file ${index + 1}/${uniqueFiles.length} (${file.name})...`,
@@ -181,7 +205,7 @@ export function useDriveImport({
         return { addedCount: items.length, fallbackCount, failedCount, failedFiles, skippedCount, blockedImageCount }
       } finally { importBusyRef.current = false }
     },
-    [addItems, analyze],
+    [addItems, analyze, getDocumentSession],
   )
 
   const importFolderLink = useCallback(

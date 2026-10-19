@@ -49,3 +49,18 @@ it("allows a user to save a transmittal using an agency created by someone else"
   expect(mocks.agency).toHaveBeenCalledWith({ where: { id: "shared-agency" }, select: { id: true } })
   expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ userId: "user-2", agencyId: "shared-agency", sender: data.sender }) }))
 })
+
+it("persists QA snapshots and document references without persisting document bytes", async () => {
+  mocks.create.mockResolvedValue({ id: "saved", project: {}, department: null })
+  mocks.transaction.mockImplementation(async callback => callback({ transmittal: { create: mocks.create } }))
+  const data = createInitialTransmittalData()
+  data.project.transmittalNumber = "202610-0002"
+  data.qa = { requirements: [{ id: "req", name: "Permit", keywords: ["Acme"], mode: "exact" }] }
+  const document = { id: "stable-doc", name: "Permit.pdf", mimeType: "application/pdf", revision: "one" }
+  data.items = [{ id: "row", qty: "1", noOfItems: "1", documentNumber: "", description: "Permit", remarks: "", document }]
+  await createTransmittal("user-1", data, true)
+  const stored = mocks.create.mock.calls.at(-1)[0].data
+  expect(stored.qa).toEqual(data.qa)
+  expect(stored.items.create[0].document).toEqual(document)
+  expect(stored.items.create[0]).not.toHaveProperty("content")
+})

@@ -1,3 +1,4 @@
+import type { DocumentReference, QaState } from "./lib/transmittal-qa"
 
 export interface TransmittalItem {
   id: string;
@@ -7,6 +8,7 @@ export interface TransmittalItem {
   description: string;
   remarks: string;
   fileType?: 'upload' | 'gdrive' | 'link';
+  document?: DocumentReference;
   fileSource?: string; // URL or File Name
 }
 
@@ -64,6 +66,7 @@ export interface FooterNotes {
 }
 
 export interface AppData {
+  qa?: QaState;
   recipient: RecipientInfo;
   project: ProjectInfo;
   items: TransmittalItem[];
@@ -82,6 +85,7 @@ export interface AppData {
 }
 
 export type WorkspaceSection =
+  | "qa"
   | "files"
   | "sender"
   | "project"
