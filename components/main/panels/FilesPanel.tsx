@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, type DragEvent } from "react"
 import { HardDrive, Link2, Loader2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,12 +17,21 @@ type FilesPanelProps = {
   parseProgress: { current: number; total: number }
   isDocumentProcessing: boolean
   onOpenUploadModal: () => void
+  onDropFiles: (files: File[]) => void
   isDriveReady: boolean
   onOpenDriveModal: () => void
   onAddManualItem: () => void
 }
 
 export function FilesPanel(props: FilesPanelProps) {
+  const [isDragging, setIsDragging] = useState(false)
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (!event.dataTransfer.types.includes("Files")) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = props.isDocumentProcessing ? "none" : "copy"
+    if (!props.isDocumentProcessing) setIsDragging(true)
+  }
+
   const importFromLink = () => {
     if (props.smartInput.trim() && !props.isDocumentProcessing) props.onSmartAnalysis()
   }
@@ -81,25 +91,57 @@ export function FilesPanel(props: FilesPanelProps) {
             </Button>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragOver}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragging(false)
+            }}
+            onDrop={(event) => {
+              event.preventDefault()
+              setIsDragging(false)
+              if (props.isDocumentProcessing) return
+              const files = Array.from(event.dataTransfer.files)
+              if (files.length) props.onDropFiles(files)
+            }}
+            aria-busy={props.isDocumentProcessing}
+            className={`mt-4 rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors duration-150 motion-reduce:transition-none ${
+              props.isDocumentProcessing
+                ? "border-divider bg-fog"
+                : isDragging
+                  ? "border-royal bg-wash ring-4 ring-royal/10"
+                  : "border-royal/30 bg-wash/50 hover:border-royal/60"
+            }`}
+          >
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-royal/15 bg-white text-royal">
+              {props.isDocumentProcessing ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin motion-reduce:animate-none" /> : <Upload aria-hidden="true" className="h-5 w-5" />}
+            </div>
+            <p className="text-sm font-semibold text-ink" role="status">
+              {props.isDocumentProcessing ? "Processing documents…" : isDragging ? "Drop files to add them" : "Drag & drop files here"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-caption">
+              {props.isDocumentProcessing ? "You can add more files when processing finishes." : "Add one or more documents from your computer."}
+            </p>
             <Button
               data-tour="browse-drive"
               variant="outline"
               onClick={props.onOpenUploadModal}
               disabled={props.isDocumentProcessing}
-              className="h-10 rounded-full text-xs font-medium"
+              className="mt-3 h-9 rounded-full bg-white px-4 text-xs font-medium"
             >
-              <Upload className="mr-2 h-4 w-4" /> Upload files
+              Or browse files
             </Button>
-            <Button
-              variant="outline"
-              onClick={props.onOpenDriveModal}
-              disabled={props.isDocumentProcessing}
-              className="h-10 rounded-full text-xs font-medium"
-            >
-              <HardDrive className="mr-2 h-4 w-4" /> Browse Drive
-            </Button>
+            <p className="mt-3 text-xs text-helper">PDF and Word (.doc, .docx)</p>
           </div>
+
+          <Button
+            variant="outline"
+            onClick={props.onOpenDriveModal}
+            disabled={props.isDocumentProcessing}
+            className="mt-3 h-10 w-full rounded-full text-xs font-medium"
+          >
+            <HardDrive className="mr-2 h-4 w-4" /> Browse Google Drive
+          </Button>
         </section>
 
         {!props.items.length ? (

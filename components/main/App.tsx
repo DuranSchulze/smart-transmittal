@@ -935,6 +935,10 @@ const AppContent: React.FC = () => {
                 parseProgress={parseProgress}
                 isDocumentProcessing={isDocumentProcessing}
                 onOpenUploadModal={() => setIsFileUploadOpen(true)}
+                onDropFiles={(files) => {
+                  setFileUploadInitialFiles(files);
+                  setIsFileUploadOpen(true);
+                }}
                 isDriveReady={canUseDrive}
                 onOpenDriveModal={handleOpenDriveModal}
                 onAddManualItem={handleManualAdd}
