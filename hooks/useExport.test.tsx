@@ -53,7 +53,7 @@ describe("useExport", () => {
     expect(exportedElement.style.minHeight).toBe("0px")
     expect(exportedElement.isConnected).toBe(false)
     expect(pdfMocks.worker.set).toHaveBeenCalledWith(expect.objectContaining({
-      pagebreak: expect.objectContaining({ avoid: expect.arrayContaining([".transmittal-closing", ".transmittal-items tr"]) }),
+      pagebreak: { mode: [] },
     }))
     expect(pdfMocks.worker.outputPdf).toHaveBeenCalledWith("blob")
     expect(result.current.exportChoiceOpen).toBe(true)

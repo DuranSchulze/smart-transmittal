@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest"
-import { balanceClosingSection, createPdfExportSource, waitForPdfImages } from "./pdf-layout"
+import { createPdfExportSource, paginatePdfExport, waitForPdfImages } from "./pdf-layout"
 
 afterEach(() => { document.body.innerHTML = "" })
 const rect = (node: Element, top: number, height: number) => {
@@ -41,32 +41,27 @@ describe("PDF export layout", () => {
 
   const longTable = (footerHeight = 273) => {
     const root = document.createElement("div")
-    root.innerHTML = `<table class="transmittal-items"><thead><tr><th>Description</th></tr></thead><tbody>${Array.from({ length: 24 }, (_, i) => `<tr><td>Document ${i + 1}</td></tr>`).join("")}</tbody></table><div class="transmittal-closing">Signatures and acknowledgement</div>`
+    root.innerHTML = `<table class="transmittal-items"><thead><tr><th>Description</th></tr></thead><tbody>${Array.from({ length: 4 }, (_, i) => `<tr><td>Document ${i + 1}</td></tr>`).join("")}</tbody></table><div class="transmittal-closing"><div class="avoid-break">Signatures and acknowledgement</div></div>`
     document.body.append(root)
-    rect(root, 0, 3100)
-    rect(root.querySelector("thead")!, 450, 50)
-    rect(root.querySelector("thead tr")!, 450, 50)
-    root.querySelectorAll("tbody tr").forEach((row, i) => rect(row, 500 + i * 94, 94))
-    rect(root.querySelector(".transmittal-closing")!, 2788, footerHeight)
+    rect(root, 0, 850 + footerHeight)
+    rect(root.querySelector("table")!, 450, 400)
+    root.querySelectorAll("tbody tr").forEach((row, i) => rect(row, 500 + i * 85, 85))
+    rect(root.querySelector(".avoid-break")!, 850, footerHeight)
     return root
   }
 
-  it("carries trailing rows onto an isolated sign-off page without losing or reordering rows", () => {
+  it("keeps rows that fit on the page when the sign-off needs a page break", () => {
     const root = longTable()
-    balanceClosingSection(root)
-    const group = root.querySelector(".transmittal-closing-group")!
-    expect(group).not.toBeNull()
-    expect(group.querySelectorAll("tbody tr").length).toBeGreaterThan(0)
-    expect(group.querySelector("thead")?.textContent).toBe("Description")
-    expect(group.lastElementChild?.className).toBe("transmittal-closing")
+    paginatePdfExport(root)
+    expect(root.querySelector(".avoid-break")?.previousElementSibling?.getAttribute("aria-hidden")).toBe("true")
     expect(Array.from(root.querySelectorAll("tbody tr"), row => row.textContent))
-      .toEqual(Array.from({ length: 24 }, (_, i) => `Document ${i + 1}`))
+      .toEqual(["Document 1", "Document 2", "Document 3", "Document 4"])
   })
 
   it("allows a closing section taller than a page to flow rather than clipping it", () => {
     const root = longTable(1200)
-    balanceClosingSection(root)
-    expect(root.querySelector(".transmittal-closing-group")).toBeNull()
-    expect(root.querySelectorAll("tbody tr")).toHaveLength(24)
+    paginatePdfExport(root)
+    expect(root.querySelector("[aria-hidden]")).toBeNull()
+    expect(root.querySelectorAll("tbody tr")).toHaveLength(4)
   })
 })

@@ -9,7 +9,7 @@ import { uploadFileToDrive } from "../services/googleDriveService"
 import { friendlyError } from "../lib/friendlyError"
 import { createCsv } from "../lib/csv"
 import { createExportFileName } from "../lib/export-file"
-import { createPdfExportSource, waitForPdfImages } from "../lib/pdf-layout"
+import { createPdfExportSource, paginatePdfExport, waitForPdfImages } from "../lib/pdf-layout"
 
 type StatusType = "info" | "error"
 
@@ -147,6 +147,7 @@ export function useExport({ data, onStatus }: UseExportOptions) {
       cleanup = exportSource.cleanup
       await waitForPdfImages(exportSource.element)
       await waitForExportLayout()
+      paginatePdfExport(exportSource.element)
 
       const { default: html2pdf } = await import("html2pdf.js")
       const fileName = createExportFileName(
@@ -154,17 +155,14 @@ export function useExport({ data, onStatus }: UseExportOptions) {
         `_${timestamp()}`,
         "pdf",
       )
-      // The package declarations omit its supported pagebreak plugin options.
+      // The export clone already has spacers aligned to the PDF page boundaries.
       const options = {
         margin: 0.5,
         filename: fileName,
         image: { type: "jpeg" as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" as const },
-        pagebreak: {
-          mode: ["css", "legacy"],
-          avoid: [".transmittal-items tr", ".transmittal-closing", ".avoid-break"],
-        },
+        pagebreak: { mode: [] },
       }
       const worker = html2pdf().from(exportSource.element).set(options).toPdf()
 

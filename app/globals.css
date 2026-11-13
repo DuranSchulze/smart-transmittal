@@ -4,13 +4,12 @@
 
 @media print {
   @page {
-    /* No page-margin area for browser-generated date/title/URL/page numbers. */
-    margin: 0;
+    margin: 0.5in;
     size: letter;
   }
   body {
     margin: 0;
-    padding: 0.5in;
+    padding: 0;
     background-color: white !important;
   }
   * {
@@ -22,9 +21,7 @@
   }
 
   /*
-   * Native print (File > Print / Ctrl+P) renders an off-screen clone of the
-   * preview document as the only visible body content, so app chrome never
-   * appears on paper. The clone is built in hooks/useExport.ts.
+   * The app's Print action shows only the standalone copy built in useExport.
    */
   body.transmittal-printing > *:not(.transmittal-print-host) {
     display: none !important;
@@ -37,9 +34,16 @@
     height: auto !important;
     pointer-events: auto !important;
   }
+  .transmittal-print-host .transmittal-meta > div,
+  .transmittal-print-host .transmittal-items tr {
+    break-inside: avoid;
+  }
+  .transmittal-print-host .transmittal-items thead {
+    break-after: avoid;
+  }
 }
 
-/* The print clone must stay laid out for measurement but invisible on screen. */
+/* Keep the print clone invisible while the browser is in screen mode. */
 .transmittal-print-host {
   visibility: hidden;
 }

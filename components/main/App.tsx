@@ -1031,7 +1031,7 @@ const AppContent: React.FC = () => {
         data={data}
         hasFormData={hasFormData}
         isDocumentProcessing={isDocumentProcessing}
-        isGeneratingPdf={isGeneratingPdf}
+        isGeneratingPdf={isGeneratingPdf || isPrinting}
         columnWidths={columnWidths}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
