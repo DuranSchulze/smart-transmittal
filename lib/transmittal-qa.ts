@@ -36,6 +36,10 @@ export const QaDocumentResultSchema = z.object({
   coverage: z.enum(["full-text", "visual", "incomplete", "unavailable"]),
   findings: z.array(QaFindingSchema).max(100),
   error: z.string().max(1000).optional(),
+  /** Where checked text came from. OCR text stays review-only (coverage "visual"). */
+  contentSource: z.enum(["native", "ocr", "gemini-visual"]).optional(),
+  /** Stable reason code when the read was not complete document text. */
+  reason: z.string().max(100).optional(),
 }).strict()
 export const QaSnapshotSchema = z.object({
   checkedAt: z.string().datetime(),
@@ -90,6 +94,19 @@ export function qaDocuments(items: TransmittalItem[]): DocumentReference[] {
   return Array.from(new Map(references.map(doc => [doc.id, doc])).values())
 }
 
+export const SCANNED_REVIEW_EXPLANATION = "Scanned — visually read, review required. Accept after checking the evidence, or attach a text PDF."
+
+/** Content-coverage label shown per document; visual coverage never reads as full text. */
+export function qaCoverageLabel(document: Pick<QaDocumentResult, "coverage" | "contentSource">) {
+  if (document.coverage === "full-text") return "Full document text checked"
+  if (document.coverage === "visual") {
+    return document.contentSource === "ocr"
+      ? "Scanned — read with local OCR, review required"
+      : "Scanned — visually read, review required"
+  }
+  return document.coverage === "incomplete" ? "Incomplete — part of the document could not be checked" : "Could not check"
+}
+
 export function aggregateQa(requirements: QaRequirement[], documents: QaDocumentResult[]): QaRow[] {
   return requirements.map(requirement => {
     const candidates = documents.flatMap(document => document.findings
@@ -107,8 +124,11 @@ export function aggregateQa(requirements: QaRequirement[], documents: QaDocument
       const { document, finding } = candidates[0]
       const completeKeywords = requirement.keywords.every(keyword => finding.keywords.some(k => k.keyword === keyword))
       if (document.error || ["unavailable", "incomplete"].includes(document.coverage)) {
-        status = "Unable to check"; explanation = document.error || "The complete document could not be checked."
-      } else if (unknown || document.coverage === "visual" || !completeKeywords || finding.keywords.some(k => k.status === "uncertain")) {
+        status = "Unable to check"; explanation = document.error || "The complete document could not be checked. Reattach the file or retry."
+      } else if (document.coverage === "visual") {
+        // Q3: scans stay review-only; say why the pass is withheld and how to proceed.
+        status = "Needs review"; explanation = SCANNED_REVIEW_EXPLANATION
+      } else if (unknown || !completeKeywords || finding.keywords.some(k => k.status === "uncertain")) {
         status = "Needs review"; explanation = "Review uncertain evidence or unreadable documents before accepting this match."
       } else if (finding.keywords.some(k => k.status === "missing")) {
         status = "Missing keywords"; explanation = "The matched document does not contain all required phrases."

@@ -3,6 +3,7 @@ import { resolveApiUrl } from "./api-url"
 
 export type UserAiSettings = {
   hasCustomGeminiKey: boolean
+  personalKeyStatus?: "none" | "usable" | "unusable"
   updatedAt?: string | null
   warning?: string
 }

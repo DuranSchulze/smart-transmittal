@@ -147,6 +147,8 @@ export const ParseTransmittalRequestSchema = z
     mimeType: z.string().min(1, "MIME type is required"),
     isText: z.boolean().optional().default(false),
     fileName: z.string().optional(),
+    /** Import entry point for diagnostics; unknown values are ignored by the route. */
+    flow: z.string().max(40).optional(),
   })
   .passthrough()
 

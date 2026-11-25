@@ -36,3 +36,26 @@ describe("FilesPanel local import", () => {
     expect((screen.getByRole("button", { name: "Or browse files" }) as HTMLButtonElement).disabled).toBe(true)
   })
 })
+
+describe("FilesPanel review list (REQ-2)", () => {
+  const base = { qty: "1", noOfItems: "1", documentNumber: "", remarks: "" }
+  const render2 = (items: Parameters<typeof FilesPanel>[0]["items"]) => render(<FilesPanel items={items} smartInput="" onSmartInputChange={vi.fn()} isAnalyzingText={false} onSmartAnalysis={vi.fn()} isParsing={false} parseProgress={{ current: 0, total: 0 }} isDocumentProcessing={false} onOpenUploadModal={vi.fn()} onDropFiles={vi.fn()} isDriveReady={false} onOpenDriveModal={vi.fn()} onAddManualItem={vi.fn()} />)
+  it("lists scanned and filename-only rows with a reason and recovery, but not text rows", () => {
+    render2([
+      { ...base, id: "a", description: "Invoice", fileSource: "invoice.pdf", extraction: { readMethod: "text" } },
+      { ...base, id: "b", description: "Deed", fileSource: "deed.pdf", extraction: { readMethod: "visual", reason: "ocr_unavailable" } },
+      { ...base, id: "c", description: "scan", fileSource: "scan.pdf", extraction: { readMethod: "none", reason: "provider_timeout" } },
+      { ...base, id: "d", description: "Saved earlier", fileSource: "old.pdf" },
+    ])
+    const list = screen.getByRole("region", { name: /Needs review · 2/ })
+    expect(list.textContent).toContain("deed.pdf")
+    expect(list.textContent).toContain("Read visually by AI — Local OCR is unavailable.")
+    expect(list.textContent).toContain("The document took too long to analyze. Filled from the file name. Retry later or split the file.")
+    expect(list.textContent).not.toContain("invoice.pdf")
+    expect(list.textContent).not.toContain("old.pdf")
+  })
+  it("shows nothing when every row was read from text", () => {
+    render2([{ ...base, id: "a", description: "Invoice", extraction: { readMethod: "text" } }])
+    expect(screen.queryByRole("region", { name: /Needs review/ })).toBeNull()
+  })
+})

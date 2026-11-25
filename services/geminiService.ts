@@ -1,5 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import { DEFAULT_GEMINI_MODEL } from "@/lib/gemini-models";
+import { classifyProviderError, reasonCopy, type KeyClass, type ParseReason, type PersonalKeyStatus, type ReadMethod } from "@/lib/parse-reasons";
 
 // Schema Definition based on Structured Output Generation technique
 const RESPONSE_SCHEMA = {
@@ -86,6 +87,18 @@ export interface ParseResult {
     };
     error?: string;
     fallbackCount?: number;
+    /** Machine-readable cause when the read was not fully reliable (never raw provider text). */
+    reason?: ParseReason;
+    /** How the content was obtained; "none" means the row came from the file name. */
+    readMethod?: ReadMethod;
+    /** Which AI key class served the request; never the key itself. */
+    keyClass?: KeyClass;
+    personalKeyStatus?: PersonalKeyStatus;
+}
+
+export interface ParseOptions {
+    /** Provider timeout for this call, already reduced by time the route spent. */
+    timeoutMs?: number;
 }
 
 export interface DocumentNumberResolutionInput {
@@ -93,7 +106,17 @@ export interface DocumentNumberResolutionInput {
     sourceName?: string | null;
     description?: string | null;
     documentType?: string | null;
+    /** True when no document content was read; generic file names then yield no number. */
+    unreadable?: boolean;
 }
+
+const GENERIC_FILE_STEM = /^(?:scan(?:ned)?|document|doc|file|img|image|photo|untitled|new|copy|page|pdf)(?:[\s_\-().#]*(?:of|copy|\d+))*[\s_\-().#\d]*$/i;
+
+/** File names such as "scan.pdf", "IMG_20241105.pdf" or "file (2).pdf" carry no document identity. */
+export const isGenericFileName = (name: string): boolean => {
+    const stem = name.trim().replace(/\.[^/.]+$/, "").trim();
+    return !stem || GENERIC_FILE_STEM.test(stem);
+};
 
 // --- Helper: Generate Smart Placeholder for Missing IDs ---
 const generateSmartPlaceholder = (type: string, description: string, filename: string): string => {
@@ -258,7 +281,7 @@ const isWeakDocumentNumberCandidate = (
     return false;
 };
 
-const extractLabeledIdentifier = (text: string): string => {
+export const extractLabeledIdentifier = (text: string): string => {
     const source = String(text || "");
     if (!source) return "";
 
@@ -327,6 +350,7 @@ export const resolveDocumentNumberWithFallback = ({
     sourceName,
     description,
     documentType,
+    unreadable = false,
 }: DocumentNumberResolutionInput): string => {
     const safeSourceName = String(sourceName || "").trim();
     const safeDescription = String(description || "").trim();
@@ -344,6 +368,9 @@ export const resolveDocumentNumberWithFallback = ({
     ) {
         return current;
     }
+
+    // Q4 default: an unreadable document with a generic file name gets no invented number.
+    if (unreadable && isGenericFileName(safeSourceName || safeDescription)) return "";
 
     const sourceBase = stripFileExtension(safeSourceName);
     const textCandidates = [safeSourceName, sourceBase, safeDescription].filter(
@@ -398,14 +425,17 @@ const resolveGeminiModel = (override?: string | null): string => {
     return process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
 };
 
-const buildFallbackParseResult = (fileName?: string, remarks: string = ""): ParseResult => {
+/** One row built from the file name because no document content could be read. */
+export const buildFailureParseResult = (fileName: string | undefined, reason: ParseReason): ParseResult => {
     const safeFileName = (fileName || "Uploaded Document").trim();
     const description = stripFileExtension(safeFileName) || safeFileName;
     const documentNumber = resolveDocumentNumberWithFallback({
         sourceName: safeFileName,
         description,
         documentType: "File",
+        unreadable: true,
     });
+    const message = reasonCopy(reason);
 
     return {
         parser: "fallback",
@@ -413,10 +443,13 @@ const buildFallbackParseResult = (fileName?: string, remarks: string = ""): Pars
             description,
             documentNumber,
             qty: "1",
-            remarks,
+            remarks: message,
             documentType: "File",
         }],
         fallbackCount: 1,
+        error: message,
+        reason,
+        readMethod: "none",
     };
 };
 
@@ -464,25 +497,21 @@ export const parseTransmittalDocument = async (
     keyOverride?: string,
     singleDocumentText: boolean = false,
     modelOverride?: string,
+    options: ParseOptions = {},
 ): Promise<ParseResult> => {
 
   try {
     const apiKey = String(keyOverride || "").trim() || resolveGeminiApiKey();
     if (!apiKey) {
-        const userMessage = "AI parser is not configured (missing Gemini API key).";
-
         if (isText && !singleDocumentText) {
-            return parseWithRegex(content);
+            return { ...parseWithRegex(content), reason: "config_missing", readMethod: "text" };
         }
 
-        return {
-            ...buildFallbackParseResult(fileName, userMessage),
-            parser: "fallback",
-            error: userMessage,
-        };
+        return buildFailureParseResult(fileName, "config_missing");
     }
 
-    const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: 60_000 } });
+    const timeout = Math.min(60_000, Math.max(1_000, Math.round(options.timeoutMs ?? 60_000)));
+    const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout } });
     const model = resolveGeminiModel(modelOverride);
     // Only apply this model-specific control to supported 2.5 Flash models.
     const configuredBudget = Number(process.env.GEMINI_THINKING_BUDGET ?? 0);
@@ -570,6 +599,7 @@ export const parseTransmittalDocument = async (
 
         return {
             parser: isText ? "gemini-text" : "gemini-visual",
+            readMethod: isText ? "text" : "visual",
             items: processedItems,
             header: data.extractedHeader && typeof data.extractedHeader === "object"
                 ? Object.fromEntries([
@@ -584,27 +614,16 @@ export const parseTransmittalDocument = async (
     
     throw new Error("AI returned invalid data structure.");
 
-  } catch (error: any) {
-    console.warn("Gemini Service Failed:", error);
-    
-    let userMessage = error.message || "Unknown analysis error.";
-    if (/timeout|timed out|abort/i.test(error.message || "")) {
-        userMessage = "Document analysis timed out. Try a smaller file or retry later.";
-    } else if (error.message?.includes("401") || error.message?.includes("API key")) {
-        userMessage = "Invalid API Key. Please check your credentials.";
-    } else if (error.message?.includes("429") || error.message?.includes("quota")) {
-        userMessage = "AI Quota Exceeded. Try again later.";
-    } else if (error.message?.includes("500") || error.message?.includes("Internal")) {
-        userMessage = "AI Service Error. Please retry.";
-    }
+  } catch (error: unknown) {
+    const reason = classifyProviderError(error);
+    // SDK errors can echo request payloads: log only the class and status.
+    const status = (error as { status?: unknown } | null)?.status;
+    console.warn(JSON.stringify({ event: "gemini_parse_failed", reason, status: typeof status === "number" ? status : undefined }));
 
     if (isText && !singleDocumentText) {
-        return parseWithRegex(content);
+        return { ...parseWithRegex(content), reason, readMethod: "text" };
     }
-    
-    const fallbackResult = buildFallbackParseResult(fileName, userMessage);
-    fallbackResult.parser = "fallback";
-    fallbackResult.error = userMessage;
-    return fallbackResult;
+
+    return buildFailureParseResult(fileName, reason);
   };
 };

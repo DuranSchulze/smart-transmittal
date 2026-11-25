@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, type DragEvent } from "react"
-import { HardDrive, Link2, Loader2, Upload } from "lucide-react"
+import { AlertTriangle, HardDrive, Link2, Loader2, Upload } from "lucide-react"
+import { needsReview, reasonRecovery, reviewNote } from "@/lib/parse-reasons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { TransmittalItem } from "@/types"
@@ -23,8 +24,18 @@ type FilesPanelProps = {
   onAddManualItem: () => void
 }
 
+const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/** Rows imported this session that were not read from document text (spec REQ-2). */
+export function reviewItems(items: TransmittalItem[]) {
+  return items.flatMap(item => item.extraction && needsReview(item.extraction.readMethod, item.extraction.reason)
+    ? [{ id: item.id, name: item.document?.name || item.fileSource || item.description || "Untitled item", extraction: item.extraction }]
+    : [])
+}
+
 export function FilesPanel(props: FilesPanelProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const review = reviewItems(props.items)
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (!event.dataTransfer.types.includes("Files")) return
     event.preventDefault()
@@ -143,6 +154,27 @@ export function FilesPanel(props: FilesPanelProps) {
             <HardDrive className="mr-2 h-4 w-4" /> Browse Google Drive
           </Button>
         </section>
+
+        {review.length ? (
+          <section aria-labelledby="files-review-heading" className="rounded-2xl border border-divider bg-white p-4 shadow-card">
+            <h3 id="files-review-heading" className="flex items-center gap-1.5 text-xs font-medium text-caption">
+              <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5 text-amber-700" />
+              Needs review · {review.length}
+            </h3>
+            <p className="mt-0.5 text-xs text-helper">Check these rows against the document before saving.</p>
+            <ul className="mt-3 space-y-2">
+              {review.map(row => (
+                <li key={row.id} className="rounded-xl bg-fog px-3 py-2">
+                  <p className="truncate text-xs font-medium text-ink">{row.name}</p>
+                  <p className="mt-0.5 text-xs text-caption">
+                    {sentence(reviewNote(row.extraction.readMethod, row.extraction.reason))}.
+                    {row.extraction.reason ? ` ${reasonRecovery(row.extraction.reason)}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {!props.items.length ? (
           <Button

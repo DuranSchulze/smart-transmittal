@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { db } from "@/server/auth";
 import { DEFAULT_GEMINI_MODEL, normalizeGeminiModel } from "@/lib/gemini-models";
+import type { PersonalKeyStatus } from "@/lib/parse-reasons";
 
 const ENCRYPTION_ENV_KEY = "APP_SETTINGS_ENCRYPTION_KEY";
 const ALGORITHM = "aes-256-gcm";
@@ -76,6 +77,8 @@ export const getUserAiKeyMetadata = async (userId: string) => {
 
   return {
     hasCustomGeminiKey: Boolean(settings?.geminiApiKeyEncrypted),
+    // A stored key that cannot be decrypted is reported, never presented as active.
+    personalKeyStatus: personalKeyStatusOf(settings?.geminiApiKeyEncrypted),
     geminiModel: selectedGeminiModel ?? defaultGeminiModel,
     defaultGeminiModel,
     updatedAt: settings?.updatedAt ?? null,
@@ -97,21 +100,35 @@ export const getUserGeminiModel = async (
   return normalizeGeminiModel(settings?.geminiModel);
 };
 
-export const getDecryptedUserGeminiApiKey = async (
+const tryDecrypt = (payload: string): string | null => {
+  try {
+    return decryptUserGeminiApiKey(payload);
+  } catch (error) {
+    // Log the category only; the payload and secret never leave the server.
+    console.error("Failed to decrypt user Gemini API key:", error instanceof Error ? error.message.split(".")[0] : "unknown");
+    return null;
+  }
+};
+
+const personalKeyStatusOf = (payload: string | null | undefined): PersonalKeyStatus =>
+  !payload ? "none" : tryDecrypt(payload) ? "usable" : "unusable";
+
+/** The user's usable personal key, plus whether a stored key could not be used (REQ-5). */
+export const resolveUserGeminiKey = async (
   userId: string,
-): Promise<string | null> => {
+): Promise<{ apiKey: string | null; personalKeyStatus: PersonalKeyStatus }> => {
   const settings = await db.userAiSettings.findUnique({
     where: { userId },
     select: { geminiApiKeyEncrypted: true },
   });
-
-  if (!settings?.geminiApiKeyEncrypted) return null;
-
-  try {
-    return decryptUserGeminiApiKey(settings.geminiApiKeyEncrypted);
-  } catch (error) {
-    console.error("Failed to decrypt user Gemini API key:", error);
-    return null;
-  }
+  const payload = settings?.geminiApiKeyEncrypted;
+  if (!payload) return { apiKey: null, personalKeyStatus: "none" };
+  const apiKey = tryDecrypt(payload);
+  return { apiKey, personalKeyStatus: apiKey ? "usable" : "unusable" };
 };
+
+/** Kept for existing callers; prefer `resolveUserGeminiKey`. */
+export const getDecryptedUserGeminiApiKey = async (
+  userId: string,
+): Promise<string | null> => (await resolveUserGeminiKey(userId)).apiKey;
 

@@ -36,7 +36,9 @@ describe("Gemini parsing configuration", () => {
       "Invoice No INV-12345\nRecipient: Acme\nProject: Office\nOriginal", "text/plain", true, "invoice.pdf", "test-key", true,
     )
     expect(result.items).toHaveLength(1)
-    expect(result.error).toBe("AI unavailable")
+    // H6: the raw provider message is mapped to a reason and safe copy.
+    expect(result.reason).toBe("provider_rejected")
+    expect(result.error).not.toContain("AI unavailable")
   })
   it("normalizes optional fields and keeps one item for a document", async () => {
     mocks.generateContent.mockResolvedValue({ text: JSON.stringify({

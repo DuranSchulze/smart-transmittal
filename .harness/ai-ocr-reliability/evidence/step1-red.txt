@@ -1,0 +1,1173 @@
+
+ RUN  v4.1.10 /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal
+
+ ❯ hooks/useDriveImport.reasons.test.tsx (0 test)
+ ❯ server/ocr.test.ts (0 test)
+stderr | server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > reports extraction_failed on native errors
+PDF Inspector extraction unavailable; using visual PDF parsing.
+
+ ❯ server/pdf-parsing.ocr.test.ts (7 tests | 7 failed) 51ms
+     × never calls OCR for a text PDF 24ms
+     × OCRs only flagged pages within the parse cap and sends text 3ms
+     × keeps the visual path with ocr_unavailable when OCR cannot run 7ms
+     × reports scan_unreadable when OCR finds no usable text 8ms
+     × reports extraction_failed on native errors 3ms
+     × reads pages 2-3 natively 2ms
+     × returns empty text on native errors 1ms
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Request timed out after 60000ms
+Gemini Service Failed: Error: Request timed out after 60000ms
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:20:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: got status: 429 quota exceeded
+Gemini Service Failed: Error: got status: 429 quota exceeded
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:21:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5 {
+  status: 429
+}
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Request payload size exceeds the limit: 20971520 bytes
+Gemini Service Failed: Error: Request payload size exceeds the limit: 20971520 bytes
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:22:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5 {
+  status: 400
+}
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: models/nope is not found
+Gemini Service Failed: Error: models/nope is not found
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:23:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5 {
+  status: 404
+}
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: API key not valid
+Gemini Service Failed: Error: API key not valid
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:24:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5 {
+  status: 400
+}
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Internal error
+Gemini Service Failed: Error: Internal error
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:25:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40
+    at runWithSuite (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)
+    at Object.collect (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26
+    at collectTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at startTests (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:3278:17)
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/base.B6Opl8PE.js:90:5 {
+  status: 500
+}
+
+stderr | services/geminiService.reasons.test.ts > Gemini failure reasons > classifies malformed JSON and unfinished output as invalid_output
+Gemini returned malformed JSON; attempting fence cleanup.
+Gemini Service Failed: SyntaxError: Unexpected token 'o', "not json at all" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at Module.parseTransmittalDocument (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.ts:531:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/services/geminiService.reasons.test.ts:36:13
+
+ ❯ services/geminiService.reasons.test.ts (18 tests | 18 failed) 65ms
+     × maps Error: Request timed out after 60000ms 18ms
+     × maps Error: got status: 429 quota exceeded 4ms
+     × maps Error: Request payload size exceeds the limit: 20971520 bytes 3ms
+     × maps Error: models/nope is not found 2ms
+     × maps Error: API key not valid 5ms
+     × maps Error: Internal error 4ms
+     × classifies malformed JSON and unfinished output as invalid_output 7ms
+     × reports a missing key as config_missing 2ms
+     × marks a successful visual read as visual, not text 3ms
+     × honours a shorter provider timeout when the route has already spent time 4ms
+     × leaves scan.pdf blank 1ms
+     × leaves Scan 001.pdf blank 1ms
+     × leaves document.pdf blank 1ms
+     × leaves IMG_20241105.pdf blank 1ms
+     × leaves untitled.pdf blank 1ms
+     × leaves file (2).pdf blank 1ms
+     × keeps meaningful names 2ms
+     × builds a failure row from a reason 1ms
+ ❯ server/transmittal-qa.ocr.test.ts (3 tests | 3 failed) 27ms
+     × OCRs only the flagged page and sends text instead of the PDF 10ms
+     × falls back to whole-PDF visual reading with the OCR reason 12ms
+     × does not OCR when more pages are flagged than the cap 4ms
+ ❯ hooks/useDocumentParsing.test.tsx (2 tests | 2 failed) 43ms
+     × marks visual and filename-only rows and names them in the status 36ms
+     × tells the user when the personal key could not be used 6ms
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > returns readMethod, reason and keyClass, and logs the flow without content or names
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:39:22
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > ignores an unknown flow value instead of failing validation
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:48:13
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > reports the system key when the personal key is unusable
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:53:19
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > refuses an oversized visual PDF before calling Gemini
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:58:25
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > finds an identifier on page 2 when the cover had none (J3)
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:73:25
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > reports document_number_unresolved when later pages have no identifier (J3)
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:81:20
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+stderr | app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > gives Gemini a reduced timeout budget
+Parse transmittal error: Error: [vitest] No "getDecryptedUserGeminiApiKey" export is defined on the "@/server/user-ai-settings" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+    at VitestMocker.createError (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:62:17)
+    at Object.get (file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/vitest/dist/chunks/startVitestModuleRunner.DB-7oCpn.js:327:16)
+    at postHandler (/Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.ts:54:9)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/observability.ts:58:28
+    at /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/app/api/parse-transmittal/route.reasons.test.ts:85:5
+    at file:///Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20 {
+  codeFrame: 'vi.mock(import("@/server/user-ai-settings"), async (importOriginal) => {\n' +
+    '  const actual = await importOriginal()\n' +
+    '  return {\n' +
+    '    ...actual,\n' +
+    '    // your mocked methods\n' +
+    '  }\n' +
+    '})'
+}
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts (8 tests | 8 failed) 237ms
+     × returns readMethod, reason and keyClass, and logs the flow without content or names 29ms
+     × ignores an unknown flow value instead of failing validation 5ms
+     × reports the system key when the personal key is unusable 6ms
+     × refuses an oversized visual PDF before calling Gemini 4ms
+     × returns too_large for requests over the encoded cap 182ms
+     × finds an identifier on page 2 when the cover had none (J3) 4ms
+     × reports document_number_unresolved when later pages have no identifier (J3) 2ms
+     × gives Gemini a reduced timeout budget 2ms
+ ❯ lib/parse-reasons.test.ts (0 test)
+ ❯ lib/transmittal-qa.visual.test.ts (5 tests | 4 failed) 18ms
+     × never passes a visual document, and says it was scanned 9ms
+     × separates could-not-check from scanned, with a recovery action 1ms
+     × labels coverage without letting visual masquerade as full text 1ms
+     × accepts legacy results without the new optional fields 5ms
+ ❯ server/user-ai-settings.test.ts (4 tests | 4 failed) 8ms
+     × resolves a usable key 5ms
+     × reports a key encrypted with a rotated secret as unusable 1ms
+     × reports corrupted ciphertext and a missing secret as unusable 1ms
+     × reports none when no key is stored 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  hooks/useDriveImport.reasons.test.tsx [ hooks/useDriveImport.reasons.test.tsx ]
+Error: Failed to resolve import "../lib/parse-reasons" from "hooks/useDriveImport.reasons.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/hooks/useDriveImport.reasons.test.tsx:10:0
+  11 |  vi.mock("../services/qa-document-content", () => ({ prepareQaContent: mocks.prepare }));
+  12 |  const __vi_import_0__ = await import("@testing-library/react");
+  13 |  const __vi_import_1__ = await import("../lib/parse-reasons");
+     |                                       ^
+  14 |  const __vi_import_2__ = await import("./useDriveImport");
+  15 |  
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:30366:39
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:30363:14
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/node.js:27393:18
+ ❯ node_modules/vite/dist/node/chunks/node.js:27456:30
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:27424:4
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:30151:14
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20098:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/49]⎯
+
+ FAIL  lib/parse-reasons.test.ts [ lib/parse-reasons.test.ts ]
+Error: Failed to resolve import "./parse-reasons" from "lib/parse-reasons.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/lib/parse-reasons.test.ts:3:92
+  1  |  import { describe, expect, it } from "vitest";
+  2  |  import { ApiError } from "./api-client";
+  3  |  import { ParseRequestError, classifyProviderError, reasonCopy, reasonFromClientError } from "./parse-reasons";
+     |                                                                                               ^
+  4  |  // REQ-1 / H6: every provider condition maps to exactly one stable reason.
+  5  |  describe("classifyProviderError", () => {
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:30366:39
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:30363:14
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/node.js:27393:18
+ ❯ node_modules/vite/dist/node/chunks/node.js:27456:30
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:27424:4
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:30151:14
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20098:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/49]⎯
+
+ FAIL  server/ocr.test.ts [ server/ocr.test.ts ]
+Error: Failed to resolve import "./ocr" from "server/ocr.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal/server/ocr.test.ts:11:0
+  10 |  const __vi_import_1__ = await import("node:os");
+  11 |  const __vi_import_2__ = await import("node:path");
+  12 |  const __vi_import_3__ = await import("./ocr");
+     |                                       ^
+  13 |  
+  14 |  
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:30366:39
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:30363:14
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/node.js:27393:18
+ ❯ node_modules/vite/dist/node/chunks/node.js:27456:30
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:27424:4
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:30151:14
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20098:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/49]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 46 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  hooks/useDocumentParsing.test.tsx > local upload honesty > marks visual and filename-only rows and names them in the status
+AssertionError: expected [ undefined, undefined, undefined ] to deeply equal [ { readMethod: 'text' }, …(2) ]
+
+- Expected
++ Received
+
+  [
+-   {
+-     "readMethod": "text",
+-   },
+-   {
+-     "readMethod": "visual",
+-     "reason": "ocr_unavailable",
+-   },
+-   {
+-     "readMethod": "none",
+-     "reason": "provider_timeout",
+-   },
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ hooks/useDocumentParsing.test.tsx:37:73
+     35|     await act(async () => { await result.current.processUploadedFiles(…
+     36|     const rows = props.addItems.mock.calls.flatMap(call => call[0])
+     37|     expect(rows.map((row: { extraction?: unknown }) => row.extraction)…
+       |                                                                         ^
+     38|       { readMethod: "text" }, { readMethod: "visual", reason: "ocr_una…
+     39|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/49]⎯
+
+ FAIL  hooks/useDocumentParsing.test.tsx > local upload honesty > tells the user when the personal key could not be used
+AssertionError: expected 'Imported 1 item(s) from 1 uploaded fi…' to match /personal AI key could not be used/i
+
+- Expected:
+/personal AI key could not be used/i
+
++ Received:
+"Imported 1 item(s) from 1 uploaded file(s) using document extraction."
+
+ ❯ hooks/useDocumentParsing.test.tsx:54:50
+     52|     const { result } = renderHook(() => useDocumentParsing(props))
+     53|     await act(async () => { await result.current.processUploadedFiles(…
+     54|     expect(props.onStatus.mock.calls.at(-1)![0]).toMatch(/personal AI …
+       |                                                  ^
+     55|   })
+     56| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/49]⎯
+
+ FAIL  lib/transmittal-qa.visual.test.ts > QA visual coverage honesty > never passes a visual document, and says it was scanned
+AssertionError: expected 'Review uncertain evidence or unreadab…' to match /^Scanned — visually read, review requ…/
+
+- Expected:
+/^Scanned — visually read, review required\./
+
++ Received:
+"Review uncertain evidence or unreadable documents before accepting this match."
+
+ ❯ lib/transmittal-qa.visual.test.ts:15:29
+     13|     const [row] = aggregateQa([requirement], [doc("visual", { contentS…
+     14|     expect(row.status).toBe("Needs review")
+     15|     expect(row.explanation).toMatch(/^Scanned — visually read, review …
+       |                             ^
+     16|     expect(row.explanation).toMatch(/attach a text PDF/i)
+     17|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/49]⎯
+
+ FAIL  lib/transmittal-qa.visual.test.ts > QA visual coverage honesty > separates could-not-check from scanned, with a recovery action
+AssertionError: expected 'The complete document could not be ch…' to match /retry|reattach/i
+
+- Expected:
+/retry|reattach/i
+
++ Received:
+"The complete document could not be checked."
+
+ ❯ lib/transmittal-qa.visual.test.ts:27:29
+     25|     expect(row.status).toBe("Unable to check")
+     26|     expect(row.explanation).not.toMatch(/Scanned/)
+     27|     expect(row.explanation).toMatch(/retry|reattach/i)
+       |                             ^
+     28|   })
+     29|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/49]⎯
+
+ FAIL  lib/transmittal-qa.visual.test.ts > QA visual coverage honesty > labels coverage without letting visual masquerade as full text
+TypeError: qaCoverageLabel is not a function
+ ❯ lib/transmittal-qa.visual.test.ts:31:12
+     29|
+     30|   it("labels coverage without letting visual masquerade as full text",…
+     31|     expect(qaCoverageLabel(doc("full-text"))).toBe("Full document text…
+       |            ^
+     32|     expect(qaCoverageLabel(doc("visual"))).toBe("Scanned — visually re…
+     33|     expect(qaCoverageLabel(doc("visual", { contentSource: "ocr" }))).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/49]⎯
+
+ FAIL  lib/transmittal-qa.visual.test.ts > QA visual coverage honesty > accepts legacy results without the new optional fields
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ lib/transmittal-qa.visual.test.ts:39:165
+     37|   it("accepts legacy results without the new optional fields", () => {
+     38|     expect(QaDocumentResultSchema.safeParse({ documentId: "d", name: "…
+     39|     expect(QaDocumentResultSchema.safeParse({ documentId: "d", name: "…
+       |                                                                                                                                                                     ^
+     40|   })
+     41| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > never calls OCR for a text PDF
+AssertionError: expected { …(4) } to match object { isText: true, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "isText": true,
+-   "pageCount": 1,
+-   "readMethod": "text",
+  }
+
+ ❯ server/pdf-parsing.ocr.test.ts:22:22
+     20|     mocks.extract.mockResolvedValue({ pages: [{ page: 0, markdown: goo…
+     21|     const prepared = await preparePdfForParsing(content, "application/…
+     22|     expect(prepared).toMatchObject({ isText: true, readMethod: "text",…
+       |                      ^
+     23|     expect(mocks.ocrPages).not.toHaveBeenCalled()
+     24|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > OCRs only flagged pages within the parse cap and sends text
+TypeError: Cannot read properties of undefined (reading '1')
+ ❯ server/pdf-parsing.ocr.test.ts:29:40
+     27|     mocks.ocrPages.mockResolvedValue({ pages: [{ page: 1, text: goodTe…
+     28|     const prepared = await preparePdfForParsing(content, "application/…
+     29|     expect(mocks.ocrPages.mock.calls[0][1]).toMatchObject({ pages: [1,…
+       |                                        ^
+     30|     expect(prepared).toMatchObject({ isText: true, extractedPdfText: t…
+     31|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > keeps the visual path with ocr_unavailable when OCR cannot run
+AssertionError: expected { …(4) } to match object { …(6) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "content": "JVBERi0xLjQgdGVzdA==",
+    "isText": false,
+    "mimeType": "application/pdf",
+-   "pageCount": 6,
+-   "readMethod": "visual",
+-   "reason": "ocr_unavailable",
+  }
+
+ ❯ server/pdf-parsing.ocr.test.ts:35:75
+     33|   it("keeps the visual path with ocr_unavailable when OCR cannot run",…
+     34|     mocks.ocrPages.mockResolvedValue({ pages: [], reason: "ocr_unavail…
+     35|     expect(await preparePdfForParsing(content, "application/pdf", fals…
+       |                                                                           ^
+     36|       content, mimeType: "application/pdf", isText: false, readMethod:…
+     37|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > reports scan_unreadable when OCR finds no usable text
+AssertionError: expected { …(4) } to match object { readMethod: 'visual', …(1) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readMethod": "visual",
+-   "reason": "scan_unreadable",
++   "content": "JVBERi0xLjQgdGVzdA==",
++   "extractedPdfText": false,
++   "isText": false,
++   "mimeType": "application/pdf",
+  }
+
+ ❯ server/pdf-parsing.ocr.test.ts:42:75
+     40|   it("reports scan_unreadable when OCR finds no usable text", async ()…
+     41|     mocks.ocrPages.mockResolvedValue({ pages: [{ page: 1, text: "  ", …
+     42|     expect(await preparePdfForParsing(content, "application/pdf", fals…
+       |                                                                           ^
+     43|   })
+     44|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > PDF preparation with selective OCR > reports extraction_failed on native errors
+AssertionError: expected { …(4) } to match object { readMethod: 'visual', …(1) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "readMethod": "visual",
+-   "reason": "extraction_failed",
++   "content": "JVBERi0xLjQgdGVzdA==",
++   "extractedPdfText": false,
++   "isText": false,
++   "mimeType": "application/pdf",
+  }
+
+ ❯ server/pdf-parsing.ocr.test.ts:48:75
+     46|     mocks.classify.mockRejectedValue(new Error("Invalid PDF"))
+     47|     mocks.extract.mockRejectedValue(new Error("Invalid PDF"))
+     48|     expect(await preparePdfForParsing(content, "application/pdf", fals…
+       |                                                                           ^
+     49|   })
+     50| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > extractLaterPagesText > reads pages 2-3 natively
+TypeError: extractLaterPagesText is not a function
+ ❯ server/pdf-parsing.ocr.test.ts:56:18
+     54|   it("reads pages 2-3 natively", async () => {
+     55|     mocks.extract.mockResolvedValue({ pages: [{ page: 1, markdown: "Co…
+     56|     expect(await extractLaterPagesText(content)).toContain("CN-2024-00…
+       |                  ^
+     57|     expect(mocks.extract).toHaveBeenCalledWith(Buffer.from(content, "b…
+     58|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/49]⎯
+
+ FAIL  server/pdf-parsing.ocr.test.ts > extractLaterPagesText > returns empty text on native errors
+TypeError: extractLaterPagesText is not a function
+ ❯ server/pdf-parsing.ocr.test.ts:61:18
+     59|   it("returns empty text on native errors", async () => {
+     60|     mocks.extract.mockRejectedValue(new Error("boom"))
+     61|     expect(await extractLaterPagesText(content)).toBe("")
+       |                  ^
+     62|   })
+     63| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/49]⎯
+
+ FAIL  server/transmittal-qa.ocr.test.ts > QA with selective OCR > OCRs only the flagged page and sends text instead of the PDF
+TypeError: Cannot read properties of undefined (reading '1')
+ ❯ server/transmittal-qa.ocr.test.ts:28:40
+     26|     mocks.ocrPages.mockResolvedValue({ pages: [{ page: 2, text: "ACME …
+     27|     const result = await checkQaDocument(request(), "key", "model")
+     28|     expect(mocks.ocrPages.mock.calls[0][1]).toMatchObject({ pages: [2]…
+       |                                        ^
+     29|     const parts = mocks.generate.mock.calls[0][0].contents.parts
+     30|     expect(parts[1].inlineData).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/49]⎯
+
+ FAIL  server/transmittal-qa.ocr.test.ts > QA with selective OCR > falls back to whole-PDF visual reading with the OCR reason
+AssertionError: expected { documentId: 'doc', …(3) } to match object { coverage: 'visual', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "contentSource": "gemini-visual",
+    "coverage": "visual",
+-   "reason": "ocr_timeout",
+  }
+
+ ❯ server/transmittal-qa.ocr.test.ts:41:20
+     39|     const result = await checkQaDocument(request(), "key", "model")
+     40|     expect(mocks.generate.mock.calls[0][0].contents.parts[1].inlineDat…
+     41|     expect(result).toMatchObject({ coverage: "visual", contentSource: …
+       |                    ^
+     42|   })
+     43|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/49]⎯
+
+ FAIL  server/transmittal-qa.ocr.test.ts > QA with selective OCR > does not OCR when more pages are flagged than the cap
+AssertionError: expected { documentId: 'doc', …(3) } to match object { Object (contentSource, reason) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "contentSource": "gemini-visual",
+-   "reason": "scan_unreadable",
++   "coverage": "visual",
++   "documentId": "doc",
++   "findings": [
++     {
++       "explanation": "ok",
++       "filename": "match",
++       "keywords": [
++         {
++           "evidence": "Acme corporation",
++           "keyword": "Acme corporation",
++           "page": 2,
++           "status": "uncertain",
++         },
++       ],
++       "requirementId": "permit",
++     },
++   ],
++   "name": "Business permit.pdf",
+  }
+
+ ❯ server/transmittal-qa.ocr.test.ts:49:20
+     47|     const result = await checkQaDocument(request(), "key", "model")
+     48|     expect(mocks.ocrPages).not.toHaveBeenCalled()
+     49|     expect(result).toMatchObject({ contentSource: "gemini-visual", rea…
+       |                    ^
+     50|   })
+     51| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/49]⎯
+
+ FAIL  server/user-ai-settings.test.ts > personal key integrity > resolves a usable key
+TypeError: resolveUserGeminiKey is not a function
+ ❯ server/user-ai-settings.test.ts:20:18
+     18|
+     19|   it("resolves a usable key", async () => {
+     20|     expect(await resolveUserGeminiKey("u1")).toEqual({ apiKey: KEY, pe…
+       |                  ^
+     21|     expect((await getUserAiKeyMetadata("u1")).personalKeyStatus).toBe(…
+     22|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/49]⎯
+
+ FAIL  server/user-ai-settings.test.ts > personal key integrity > reports a key encrypted with a rotated secret as unusable
+TypeError: resolveUserGeminiKey is not a function
+ ❯ server/user-ai-settings.test.ts:26:18
+     24|   it("reports a key encrypted with a rotated secret as unusable", asyn…
+     25|     vi.stubEnv("APP_SETTINGS_ENCRYPTION_KEY", "secret-two")
+     26|     expect(await resolveUserGeminiKey("u1")).toEqual({ apiKey: null, p…
+       |                  ^
+     27|     const metadata = await getUserAiKeyMetadata("u1")
+     28|     expect(metadata).toMatchObject({ hasCustomGeminiKey: true, persona…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/49]⎯
+
+ FAIL  server/user-ai-settings.test.ts > personal key integrity > reports corrupted ciphertext and a missing secret as unusable
+TypeError: resolveUserGeminiKey is not a function
+ ❯ server/user-ai-settings.test.ts:34:19
+     32|   it("reports corrupted ciphertext and a missing secret as unusable", …
+     33|     stored = "not.a.validpayload"
+     34|     expect((await resolveUserGeminiKey("u1")).personalKeyStatus).toBe(…
+       |                   ^
+     35|     stored = encryptUserGeminiApiKey(KEY)
+     36|     vi.stubEnv("APP_SETTINGS_ENCRYPTION_KEY", "")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/49]⎯
+
+ FAIL  server/user-ai-settings.test.ts > personal key integrity > reports none when no key is stored
+TypeError: resolveUserGeminiKey is not a function
+ ❯ server/user-ai-settings.test.ts:42:18
+     40|   it("reports none when no key is stored", async () => {
+     41|     mocks.findUnique.mockResolvedValue(null)
+     42|     expect(await resolveUserGeminiKey("u1")).toEqual({ apiKey: null, p…
+       |                  ^
+     43|   })
+     44| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Request timed out after 60000ms
+AssertionError: expected { parser: 'fallback', …(3) } to match object { parser: 'fallback', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "parser": "fallback",
+-   "readMethod": "none",
+-   "reason": "provider_timeout",
+  }
+
+ ❯ services/geminiService.reasons.test.ts:29:20
+     27|     mocks.generateContent.mockRejectedValue(error)
+     28|     const result = await visual()
+     29|     expect(result).toMatchObject({ parser: "fallback", reason, readMet…
+       |                    ^
+     30|     expect(result.error).not.toContain((error as Error).message)
+     31|     expect(result.items[0].remarks).not.toContain((error as Error).mes…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: got status: 429 quota exceeded
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Request payload size exceeds the limit: 20971520 bytes
+AssertionError: expected { parser: 'fallback', …(3) } to match object { parser: 'fallback', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "parser": "fallback",
+-   "readMethod": "none",
+-   "reason": "provider_limit",
+  }
+
+ ❯ services/geminiService.reasons.test.ts:29:20
+     27|     mocks.generateContent.mockRejectedValue(error)
+     28|     const result = await visual()
+     29|     expect(result).toMatchObject({ parser: "fallback", reason, readMet…
+       |                    ^
+     30|     expect(result.error).not.toContain((error as Error).message)
+     31|     expect(result.items[0].remarks).not.toContain((error as Error).mes…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: models/nope is not found
+AssertionError: expected { parser: 'fallback', …(3) } to match object { parser: 'fallback', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "parser": "fallback",
+-   "readMethod": "none",
+-   "reason": "invalid_model",
+  }
+
+ ❯ services/geminiService.reasons.test.ts:29:20
+     27|     mocks.generateContent.mockRejectedValue(error)
+     28|     const result = await visual()
+     29|     expect(result).toMatchObject({ parser: "fallback", reason, readMet…
+       |                    ^
+     30|     expect(result.error).not.toContain((error as Error).message)
+     31|     expect(result.items[0].remarks).not.toContain((error as Error).mes…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: API key not valid
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > maps Error: Internal error
+AssertionError: expected { parser: 'fallback', …(3) } to match object { parser: 'fallback', …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "parser": "fallback",
+-   "readMethod": "none",
+-   "reason": "provider_rejected",
+  }
+
+ ❯ services/geminiService.reasons.test.ts:29:20
+     27|     mocks.generateContent.mockRejectedValue(error)
+     28|     const result = await visual()
+     29|     expect(result).toMatchObject({ parser: "fallback", reason, readMet…
+       |                    ^
+     30|     expect(result.error).not.toContain((error as Error).message)
+     31|     expect(result.items[0].remarks).not.toContain((error as Error).mes…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > classifies malformed JSON and unfinished output as invalid_output
+AssertionError: expected undefined to be 'invalid_output' // Object.is equality
+
+- Expected:
+"invalid_output"
+
++ Received:
+undefined
+
+ ❯ services/geminiService.reasons.test.ts:36:37
+     34|   it("classifies malformed JSON and unfinished output as invalid_outpu…
+     35|     mocks.generateContent.mockResolvedValue({ text: "not json at all" …
+     36|     expect((await visual()).reason).toBe("invalid_output")
+       |                                     ^
+     37|     mocks.generateContent.mockResolvedValue({ text: JSON.stringify({ i…
+     38|     expect((await visual()).reason).toBe("invalid_output")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > reports a missing key as config_missing
+AssertionError: expected undefined to be 'config_missing' // Object.is equality
+
+- Expected:
+"config_missing"
+
++ Received:
+undefined
+
+ ❯ services/geminiService.reasons.test.ts:44:103
+     42|     vi.stubEnv("GEMINI_API_KEY", ""); vi.stubEnv("GOOGLE_API_KEY", "")
+     43|     vi.stubEnv("NEXT_PUBLIC_GEMINI_API_KEY", ""); vi.stubEnv("NEXT_PUB…
+     44|     expect((await parseTransmittalDocument("JVBERg==", "application/pd…
+       |                                                                                                       ^
+     45|   })
+     46|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > marks a successful visual read as visual, not text
+AssertionError: expected undefined to be 'visual' // Object.is equality
+
+- Expected:
+"visual"
+
++ Received:
+undefined
+
+ ❯ services/geminiService.reasons.test.ts:49:41
+     47|   it("marks a successful visual read as visual, not text", async () =>…
+     48|     mocks.generateContent.mockResolvedValue({ text: JSON.stringify({ i…
+     49|     expect((await visual()).readMethod).toBe("visual")
+       |                                         ^
+     50|   })
+     51|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > Gemini failure reasons > honours a shorter provider timeout when the route has already spent time
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   ObjectContaining {
++   {
++     "apiKey": "key",
+      "httpOptions": {
+-       "timeout": 25000,
++       "timeout": 60000,
+      },
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ services/geminiService.reasons.test.ts:55:32
+     53|     mocks.generateContent.mockResolvedValue({ text: JSON.stringify({ i…
+     54|     await parseTransmittalDocument("JVBERg==", "application/pdf", fals…
+     55|     expect(mocks.createClient).toHaveBeenCalledWith(expect.objectConta…
+       |                                ^
+     56|   })
+     57| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves scan.pdf blank
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves Scan 001.pdf blank
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves untitled.pdf blank
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves file (2).pdf blank
+AssertionError: expected 'DOC-PENDING' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ DOC-PENDING
+
+ ❯ services/geminiService.reasons.test.ts:62:128
+     60| describe("unreadable document numbers", () => {
+     61|   it.each(["scan.pdf", "Scan 001.pdf", "document.pdf", "IMG_20241105.p…
+     62|     expect(resolveDocumentNumberWithFallback({ sourceName: name, descr…
+       |                                                                                                                                ^
+     63|   })
+     64|   it("keeps meaningful names", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves document.pdf blank
+AssertionError: expected 'UMENT' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ UMENT
+
+ ❯ services/geminiService.reasons.test.ts:62:128
+     60| describe("unreadable document numbers", () => {
+     61|   it.each(["scan.pdf", "Scan 001.pdf", "document.pdf", "IMG_20241105.p…
+     62|     expect(resolveDocumentNumberWithFallback({ sourceName: name, descr…
+       |                                                                                                                                ^
+     63|   })
+     64|   it("keeps meaningful names", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > leaves IMG_20241105.pdf blank
+AssertionError: expected 'IMG_20241105' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ IMG_20241105
+
+ ❯ services/geminiService.reasons.test.ts:62:128
+     60| describe("unreadable document numbers", () => {
+     61|   it.each(["scan.pdf", "Scan 001.pdf", "document.pdf", "IMG_20241105.p…
+     62|     expect(resolveDocumentNumberWithFallback({ sourceName: name, descr…
+       |                                                                                                                                ^
+     63|   })
+     64|   it("keeps meaningful names", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > keeps meaningful names
+AssertionError: expected '55821' to be 'INV-55821' // Object.is equality
+
+Expected: "INV-55821"
+Received: "55821"
+
+ ❯ services/geminiService.reasons.test.ts:65:156
+     63|   })
+     64|   it("keeps meaningful names", () => {
+     65|     expect(resolveDocumentNumberWithFallback({ sourceName: "INV-55821 …
+       |                                                                                                                                                            ^
+     66|   })
+     67|   it("builds a failure row from a reason", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/49]⎯
+
+ FAIL  services/geminiService.reasons.test.ts > unreadable document numbers > builds a failure row from a reason
+TypeError: buildFailureParseResult is not a function
+ ❯ services/geminiService.reasons.test.ts:68:20
+     66|   })
+     67|   it("builds a failure row from a reason", () => {
+     68|     const result = buildFailureParseResult("scan.pdf", "too_large")
+       |                    ^
+     69|     expect(result).toMatchObject({ parser: "fallback", reason: "too_la…
+     70|     expect(result.items[0].documentNumber).toBe("")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > returns readMethod, reason and keyClass, and logs the flow without content or names
+AssertionError: expected { Object (error) } to match object { readMethod: 'visual', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "keyClass": "system",
+-   "readMethod": "visual",
+-   "reason": "ocr_unavailable",
++   "error": "An internal server error occurred.",
+  }
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:40:35
+     38|   it("returns readMethod, reason and keyClass, and logs the flow witho…
+     39|     const response = await post({ ...pdf, content: "JVBERg==", flow: "…
+     40|     expect(await response.json()).toMatchObject({ readMethod: "visual"…
+       |                                   ^
+     41|     const line = JSON.parse(info.mock.calls.find(call => String(call[0…
+     42|     expect(line).toMatchObject({ flow: "drive-folder", reason: "ocr_un…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > ignores an unknown flow value instead of failing validation
+AssertionError: expected 500 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 500
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:48:84
+     46|
+     47|   it("ignores an unknown flow value instead of failing validation", as…
+     48|     expect((await post({ ...pdf, content: "JVBERg==", flow: "<script>"…
+       |                                                                                    ^
+     49|   })
+     50|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > reports the system key when the personal key is unusable
+AssertionError: expected { Object (error) } to match object { keyClass: 'system', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "keyClass": "system",
+-   "personalKeyStatus": "unusable",
++   "error": "An internal server error occurred.",
+  }
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:53:72
+     51|   it("reports the system key when the personal key is unusable", async…
+     52|     mocks.resolveKey.mockResolvedValue({ apiKey: null, personalKeyStat…
+     53|     expect(await (await post({ ...pdf, content: "JVBERg==" })).json())…
+       |                                                                        ^
+     54|   })
+     55|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > refuses an oversized visual PDF before calling Gemini
+AssertionError: expected { Object (error) } to match object { parser: 'fallback', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "parser": "fallback",
+-   "readMethod": "none",
+-   "reason": "too_large",
++   "error": "An internal server error occurred.",
+  }
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:59:18
+     57|     vi.stubEnv("GEMINI_INLINE_MAX_BYTES", "10")
+     58|     const body = await (await post({ ...pdf, content: Buffer.alloc(64)…
+     59|     expect(body).toMatchObject({ parser: "fallback", reason: "too_larg…
+       |                  ^
+     60|     expect(mocks.parse).not.toHaveBeenCalled()
+     61|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > returns too_large for requests over the encoded cap
+AssertionError: expected { Object (error) } to match object { reason: 'too_large' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "reason": "too_large",
++   "error": "File content is too large to analyze.",
+  }
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:66:35
+     64|     const response = await post({ ...pdf, content: "a".repeat(25 * 102…
+     65|     expect(response.status).toBe(413)
+     66|     expect(await response.json()).toMatchObject({ reason: "too_large" …
+       |                                   ^
+     67|   })
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > finds an identifier on page 2 when the cover had none (J3)
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:74:17
+     72|     mocks.later.mockResolvedValue("Annex\nControl No: CN-2024-0099\n")
+     73|     const body = await (await post({ ...pdf, content: "JVBERg==" })).j…
+     74|     expect(body.items[0].documentNumber).toBe("CN-2024-0099")
+       |                 ^
+     75|     expect(body.reason).toBeUndefined()
+     76|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > reports document_number_unresolved when later pages have no identifier (J3)
+AssertionError: expected undefined to be 'document_number_unresolved' // Object.is equality
+
+- Expected:
+"document_number_unresolved"
+
++ Received:
+undefined
+
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:81:81
+     79|     mocks.preparePdf.mockResolvedValue({ content: "Cover letter text",…
+     80|     mocks.parse.mockResolvedValue({ parser: "gemini-text", readMethod:…
+     81|     expect((await (await post({ ...pdf, content: "JVBERg==" })).json()…
+       |                                                                                 ^
+     82|   })
+     83|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/49]⎯
+
+ FAIL  app/api/parse-transmittal/route.reasons.test.ts > parse route diagnostics > gives Gemini a reduced timeout budget
+TypeError: Cannot read properties of undefined (reading '7')
+ ❯ app/api/parse-transmittal/route.reasons.test.ts:86:46
+     84|   it("gives Gemini a reduced timeout budget", async () => {
+     85|     await post({ ...pdf, content: "JVBERg==" })
+     86|     const options = mocks.parse.mock.calls[0][7]
+       |                                              ^
+     87|     expect(options.timeoutMs).toBeGreaterThanOrEqual(20_000)
+     88|     expect(options.timeoutMs).toBeLessThanOrEqual(60_000)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/49]⎯
+
+
+ Test Files  10 failed (10)
+      Tests  46 failed | 1 passed (47)
+   Start at  15:28:16
+   Duration  5.03s (transform 2.32s, setup 0ms, import 3.76s, tests 449ms, environment 22.22s)
+

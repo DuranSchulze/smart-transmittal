@@ -13,9 +13,10 @@ describe("parseDocument", () => {
       }),
     )
     const result = parseDocument({ content: "text", mimeType: "text/plain", isText: true })
-    const assertion = expect(result).rejects.toThrow("Document analysis timed out")
+    const assertion = expect(result).rejects.toThrow("The document took too long to analyze")
     await vi.advanceTimersByTimeAsync(90_000)
     await assertion
+    await expect(result).rejects.toMatchObject({ reason: "provider_timeout" })
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(vi.getTimerCount()).toBe(0)
   })

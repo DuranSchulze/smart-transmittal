@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const mocks = vi.hoisted(() => ({ session: vi.fn(), check: vi.fn() }))
 vi.mock("@/server/auth", () => ({ auth: { api: { getSession: mocks.session } } }))
 vi.mock("@/server/transmittal-qa", () => ({ checkQaDocument: mocks.check }))
-vi.mock("@/server/user-ai-settings", () => ({ getDecryptedUserGeminiApiKey: async () => "private-key", getUserGeminiModel: async () => "chosen-model", getSystemDefaultGeminiModel: () => "system-model" }))
+vi.mock("@/server/user-ai-settings", () => ({ resolveUserGeminiKey: async () => ({ apiKey: "private-key", personalKeyStatus: "usable" }), getUserGeminiModel: async () => "chosen-model", getSystemDefaultGeminiModel: () => "system-model" }))
 vi.mock("@/services/geminiService", () => ({ getSystemGeminiApiKey: () => "system-key" }))
 vi.mock("@/server/observability", () => ({ withRouteMetrics: (_path: string, handler: unknown) => handler }))
 import { POST } from "./route"
