@@ -1,4 +1,5 @@
 import type { DocumentReference, QaState } from "./lib/transmittal-qa"
+import type { ParseReason, ReadMethod } from "./lib/parse-reasons"
 
 export interface TransmittalItem {
   id: string;
@@ -10,6 +11,13 @@ export interface TransmittalItem {
   fileType?: 'upload' | 'gdrive' | 'link';
   document?: DocumentReference;
   fileSource?: string; // URL or File Name
+  /** Session-only import provenance (not persisted): how the row was read and why it needs review. */
+  extraction?: ItemExtraction;
+}
+
+export interface ItemExtraction {
+  readMethod: ReadMethod;
+  reason?: ParseReason;
 }
 
 export interface RecipientInfo {

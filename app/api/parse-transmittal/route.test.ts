@@ -14,12 +14,17 @@ vi.mock("@/server/auth", () => ({
   auth: { api: { getSession: mocks.getSession } },
 }))
 
-vi.mock("@/services/geminiService", () => ({
+vi.mock("@/services/geminiService", async importOriginal => ({
+  ...await importOriginal<typeof import("@/services/geminiService")>(),
   parseTransmittalDocument: mocks.parseTransmittalDocument,
 }))
 
 vi.mock("@/server/user-ai-settings", () => ({
-  getDecryptedUserGeminiApiKey: mocks.getDecryptedUserGeminiApiKey,
+  // The route resolves the key through resolveUserGeminiKey; keep the old assertions meaningful.
+  resolveUserGeminiKey: async (userId: string) => {
+    const apiKey = await mocks.getDecryptedUserGeminiApiKey(userId)
+    return { apiKey: apiKey ?? null, personalKeyStatus: apiKey ? "usable" : "none" }
+  },
   getUserGeminiModel: mocks.getUserGeminiModel,
 }))
 
@@ -77,10 +82,10 @@ describe("POST /api/parse-transmittal", () => {
       body: JSON.stringify({ content: "text", mimeType: "text/plain", isText: true }),
     }))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ items: [] })
+    expect(await response.json()).toMatchObject({ items: [], readMethod: "text" })
     expect(response.headers.get("Server-Timing")).toMatch(/auth;dur=.*settings;dur=.*parse;dur=.*total;dur=/)
     expect(mocks.parseTransmittalDocument).toHaveBeenCalledWith(
-      "text", "text/plain", true, undefined, "personal-key", false, undefined,
+      "text", "text/plain", true, undefined, "personal-key", false, undefined, { timeoutMs: expect.any(Number) },
     )
   })
   it("forwards the user's selected Gemini model to the parser", async () => {
@@ -95,7 +100,7 @@ describe("POST /api/parse-transmittal", () => {
     }))
     expect(response.status).toBe(200)
     expect(mocks.parseTransmittalDocument).toHaveBeenCalledWith(
-      "text", "text/plain", true, undefined, undefined, false, "gemini-2.5-pro",
+      "text", "text/plain", true, undefined, undefined, false, "gemini-2.5-pro", { timeoutMs: expect.any(Number) },
     )
   })
   it("passes locally extracted PDF text into single-document parsing", async () => {
@@ -111,7 +116,7 @@ describe("POST /api/parse-transmittal", () => {
     }))
     expect(response.status).toBe(200)
     expect(mocks.parseTransmittalDocument).toHaveBeenCalledWith(
-      "extracted cover text", "text/plain", true, "invoice.pdf", "personal-key", true, undefined,
+      "extracted cover text", "text/plain", true, "invoice.pdf", "personal-key", true, undefined, { timeoutMs: expect.any(Number) },
     )
   })
   it("skips Gemini and AI key lookup when local document identity is solid", async () => {

@@ -42,10 +42,14 @@ assessment, per-keyword status/evidence/page, or a safe processing error. It doe
 not save a document or modify a transmittal. AI settings come from the current
 user, with existing system defaults as fallback.
 
-PDF QA uses PDF Inspector to extract **all** pages, with page boundaries. Missing,
-scanned, empty, or broken-font extraction sends the entire original PDF to
-Gemini. Visual evidence always requires review; incomplete processing never
-passes. This is independent of the existing metadata import's cover-page path.
+PDF QA uses PDF Inspector to extract **all** pages, with page boundaries. When
+pages are missing, scanned, empty, or broken-font and there are no more than
+`OCR_QA_MAX_PAGES` (default 10) of them, local OCR reads only those pages. The
+merged text is checked with `contentSource: "ocr"`. Otherwise the entire original
+PDF goes to Gemini (`contentSource: "gemini-visual"`) with a `reason` such as
+`ocr_unavailable`, `ocr_timeout`, or `scan_unreadable`. Both cases keep coverage
+`visual`: scanned evidence always requires review ("Scanned — visually read,
+review required"), and incomplete processing never passes. This is independent of the existing metadata import's cover-page path.
 Word uses Mammoth's textual content; original Word pagination is not available.
 Word images, headers/footers, embedded objects, and extraction warnings mark
 coverage incomplete; reattach a PDF for complete inspection. Standalone images and other file types are unsupported.
@@ -55,6 +59,9 @@ Limits are 100 requirements, 30 phrases per requirement (300 characters each),
 per QA request, 500,000 extracted characters, and 1,000 PDF pages. Oversize or
 incomplete documents are never silently truncated to pass. Provider requests use
 60-second timeouts; client QA requests use 90 seconds and the route allows 120.
+The scanned-document copy tells the operator to accept the match after checking
+the evidence, or to attach a text PDF. The route logs a `document_qa_complete`
+outcome (coverage, content source, reason, key class) without content.
 Documents are processed sequentially. Invalid/truncated AI output fails that file
 without discarding successful files. Document content, provider payloads, API
 keys, and evidence are not logged. Prompts treat document/checklist text as data.

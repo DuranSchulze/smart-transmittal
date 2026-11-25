@@ -9,8 +9,8 @@ describe("PDF Inspector routing", () => {
   it("sends reliable cover text rather than the PDF binary", async () => {
     const markdown = "Invoice No INV-12345\nRecipient: Acme Corporation\nProject: Office Renovation\nOriginal document"
     mocks.extract.mockResolvedValue({ pages: [{ page: 0, markdown, needsOcr: false }] })
-    expect(await preparePdfForParsing(content, "application/pdf", false)).toEqual({
-      content: markdown, mimeType: "text/plain", isText: true, extractedPdfText: true,
+    expect(await preparePdfForParsing(content, "application/pdf", false)).toMatchObject({
+      content: markdown, mimeType: "text/plain", isText: true, extractedPdfText: true, readMethod: "text",
     })
     expect(mocks.extract).toHaveBeenCalledWith(Buffer.from(content, "base64"), [0])
   })
@@ -20,8 +20,9 @@ describe("PDF Inspector routing", () => {
     { markdown: "\uFFFD".repeat(100), needsOcr: false },
   ])("keeps visual parsing for unreliable cover text: %j", async page => {
     mocks.extract.mockResolvedValue({ pages: [{ page: 0, ...page }] })
-    expect(await preparePdfForParsing(content, "application/pdf", false)).toEqual({
-      content, mimeType: "application/pdf", isText: false, extractedPdfText: false,
+    // OCR is off in tests (OCR_ENABLED unset), so the visual path reports why.
+    expect(await preparePdfForParsing(content, "application/pdf", false)).toMatchObject({
+      content, mimeType: "application/pdf", isText: false, extractedPdfText: false, readMethod: "visual", reason: "ocr_unavailable",
     })
   })
   it("falls back on native extraction errors", async () => {

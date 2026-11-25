@@ -2,6 +2,7 @@ import type { ParseResult } from "./geminiService"
 import type { ParseTransmittalInput } from "../lib/validation"
 import { apiFetch, apiJsonOptions } from "../lib/api-client"
 import { resolveApiUrl } from "./api-url"
+import { ParseRequestError, reasonCopy } from "../lib/parse-reasons"
 
 export async function parseDocument(
   input: ParseTransmittalInput,
@@ -16,7 +17,8 @@ export async function parseDocument(
     )
   } catch (error) {
     if (controller.signal.aborted) {
-      throw new Error("Document analysis timed out. Try a smaller file or retry later.")
+      // REQ-6: "took too long" is distinct from "the AI service failed".
+      throw new ParseRequestError(`${reasonCopy("provider_timeout")} Retry later or split the file.`, "provider_timeout")
     }
     throw error
   } finally {

@@ -6,6 +6,7 @@ import type { ParseResult } from "../services/geminiService"
 import { resolveDocumentNumberWithFallback } from "../services/geminiService"
 import { parseDocument } from "../services/parse-api"
 import { useFileProcessing } from "./useFileProcessing"
+import { needsReview, reasonCopy, reasonFromClientError, reviewNote, type ParseReason, type ReadMethod } from "../lib/parse-reasons"
 
 import type { DocumentReference, QaDocumentContent } from "../lib/transmittal-qa"
 
@@ -13,6 +14,10 @@ type ParsedFileResult = {
   items: TransmittalItem[]
   header?: ParseResult["header"]
   usedFallback: boolean
+  fileName?: string
+  readMethod?: ReadMethod
+  reason?: ParseReason
+  personalKeyUnusable?: boolean
 }
 
 type UseDocumentParsingOptions = {
@@ -48,21 +53,33 @@ export function useDocumentParsing({
     async (base64, mimeType, fileName, textComplete) => {
       const session = batchSessionRef.current
       if (getDocumentSession?.() !== session) return { items: [], usedFallback: false }
-      const result = await parseDocument(
-        {
-          content: base64,
-          mimeType,
-          isText: mimeType === "text/plain",
-          fileName,
-        },
-        apiBaseUrl,
-      )
+      let result: ParseResult
+      try {
+        result = await parseDocument(
+          {
+            content: base64,
+            mimeType,
+            isText: mimeType === "text/plain",
+            fileName,
+            flow: "upload",
+          },
+          apiBaseUrl,
+        )
+      } catch (error) {
+        // A failed request still gets a named row with its reason (REQ-2), not a silent drop.
+        const reason = reasonFromClientError(error)
+        const copy = reasonCopy(reason)
+        result = { parser: "fallback", readMethod: "none", reason, error: copy, fallbackCount: 1,
+          items: [{ description: stripExtension(fileName) || fileName, documentNumber: "", qty: "1", remarks: copy, documentType: "File" }] }
+      }
       if (getDocumentSession?.() !== session) return { items: [], usedFallback: false }
       const hasItems = result.items.length > 0
       const usedFallback = Boolean(result.error) || (result.fallbackCount || 0) > 0
       if (result.error && !hasItems) throw new Error(result.error)
 
       if (!hasItems) return { items: [], usedFallback }
+      const readMethod: ReadMethod = result.readMethod || (result.parser === "fallback" ? "none" : "text")
+      const extraction = { readMethod, ...(result.reason ? { reason: result.reason } : {}) }
       const document: DocumentReference = { id: crypto.randomUUID(), name: fileName, mimeType, revision: crypto.randomUUID() }
       onDocumentReady?.(document, { content: base64, mimeType, isText: mimeType === "text/plain", textComplete })
       return {
@@ -76,15 +93,21 @@ export function useDocumentParsing({
             description:
               item.description || stripExtension(fileName || "") || fileName,
             documentType: item.documentType || "File",
+            unreadable: readMethod === "none",
           }),
           description: item.description,
           remarks: item.remarks || "",
           fileType: "upload" as const,
           fileSource: fileName,
           document,
+          extraction,
         })),
         header: result.header,
         usedFallback,
+        fileName,
+        readMethod,
+        reason: result.reason,
+        personalKeyUnusable: result.personalKeyStatus === "unusable",
       }
     },
     [
@@ -121,7 +144,6 @@ export function useDocumentParsing({
       (total, result) => total + result.items.length,
       0,
     )
-    const fallbackCount = results.filter((result) => result.usedFallback).length
     if (!addedCount) {
       statusRef.current(
         "No items were found in the uploaded file(s). The document may not contain recognizable content.",
@@ -130,10 +152,17 @@ export function useDocumentParsing({
       return
     }
 
+    // Name each file that needs review and why, instead of an aggregate fallback count.
+    const review = results
+      .filter(result => result.items.length && needsReview(result.readMethod, result.reason))
+      .map(result => `${result.fileName} (${reviewNote(result.readMethod, result.reason)})`)
+    const keyNotice = results.some(result => result.personalKeyUnusable)
+      ? " Your personal AI key could not be used, so the shared key was used. Re-enter it in account settings."
+      : ""
     statusRef.current(
-      fallbackCount
-        ? `Imported ${addedCount} item(s) from ${results.length} uploaded file(s). Document # fallback was used for ${fallbackCount} file(s).`
-        : `Imported ${addedCount} item(s) from ${results.length} uploaded file(s) using document extraction.`,
+      review.length
+        ? `Imported ${addedCount} item(s) from ${results.length} uploaded file(s). Needs review: ${review.join("; ")}.${keyNotice}`
+        : `Imported ${addedCount} item(s) from ${results.length} uploaded file(s) from document text.${keyNotice}`,
       "info",
     )
   }

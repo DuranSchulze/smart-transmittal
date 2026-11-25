@@ -8,3 +8,6 @@ dist
 /lib/generated/prisma
 .next
 .next-build
+
+# Local OCR runtime, provisioned by scripts/fetch-ocr-runtime.sh
+/vendor/ocr/

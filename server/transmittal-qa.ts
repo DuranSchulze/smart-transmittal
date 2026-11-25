@@ -2,16 +2,28 @@ import { GoogleGenAI, Type, type Schema } from "@google/genai"
 import { z } from "zod"
 import { QaFindingSchema, normalizeQaText, type QaRequest, type QaDocumentResult, type QaKeywordFinding } from "../lib/transmittal-qa"
 import { ServiceError } from "./service-error"
+import type { ParseReason } from "../lib/parse-reasons"
+import { ocrPages, ocrQaMaxPages } from "./ocr"
 
 type Page = { text: string; page: number | null }
-type Prepared = { pages: Page[]; visual: boolean; pageCount: number | null }
+type ContentSource = NonNullable<QaDocumentResult["contentSource"]>
+type Prepared = {
+  pages: Page[]
+  /** True for any scanned read (OCR text or the whole PDF sent visually); never full-text. */
+  visual: boolean
+  pageCount: number | null
+  contentSource: ContentSource
+  reason?: ParseReason
+  ocrPages?: number
+  ocrMs?: number
+}
 const MAX_TEXT = 500_000
 
 export async function prepareQaDocument(input: QaRequest): Promise<Prepared> {
   if (input.isText) {
     if (input.document.mimeType !== "text/plain") throw new ServiceError(415, "QA text must be extracted from a Word document.")
     if (input.content.length > MAX_TEXT) throw new ServiceError(413, "The full document is too long to check. Split it into smaller documents.")
-    return { pages: [{ text: input.content, page: null }], visual: false, pageCount: null }
+    return { pages: [{ text: input.content, page: null }], visual: false, pageCount: null, contentSource: "native" }
   }
   if (input.document.mimeType !== "application/pdf") throw new ServiceError(415, "QA supports PDF and Word documents only. Reattach a PDF or Word file.")
   const bytes = Buffer.from(input.content, "base64")
@@ -23,17 +35,35 @@ export async function prepareQaDocument(input: QaRequest): Promise<Prepared> {
     const extracted = await extractPagesMarkdownAsync(bytes)
     const pages = extracted.pages.slice().sort((a, b) => a.page - b.page)
     // Do not call a truncated, missing, scanned, or broken-font page full coverage.
-    const reliable = classification.pageCount > 0 && pages.length === classification.pageCount &&
-      pages.every((page, index) => page.page === index && !page.needsOcr && !page.markdown.includes("\uFFFD") && page.markdown.trim().length > 0)
-    if (reliable) {
-      if (pages.reduce((sum, page) => sum + page.markdown.length, 0) > MAX_TEXT) throw new ServiceError(413, "The full document is too long to check. Split it into smaller documents.")
-      return { pages: pages.map(p => ({ text: p.markdown, page: p.page + 1 })), visual: false, pageCount: classification.pageCount }
+    const good = (page: (typeof pages)[number] | undefined) => Boolean(page && !page.needsOcr && !page.markdown.includes("\uFFFD") && page.markdown.trim().length > 0)
+    const byIndex = new Map(pages.map(page => [page.page, page]))
+    const unreliable = Array.from({ length: classification.pageCount }, (_, index) => index).filter(index => !good(byIndex.get(index)))
+    const tooLong = (texts: string[]) => texts.reduce((sum, text) => sum + text.length, 0) > MAX_TEXT
+    if (classification.pageCount > 0 && !unreliable.length) {
+      if (tooLong(pages.map(page => page.markdown))) throw new ServiceError(413, "The full document is too long to check. Split it into smaller documents.")
+      return { pages: pages.map(p => ({ text: p.markdown, page: p.page + 1 })), visual: false, pageCount: classification.pageCount, contentSource: "native" }
     }
-    return { pages: [], visual: true, pageCount: classification.pageCount }
+    // OCR only the unreliable pages (1-indexed), and only when they fit the QA cap.
+    const cap = ocrQaMaxPages()
+    if (classification.pageCount > 0 && unreliable.length <= cap) {
+      const outcome = await ocrPages(bytes, { pages: unreliable.map(index => index + 1), maxPages: cap })
+      const ocrByPage = new Map(outcome.pages.map(page => [page.page, page]))
+      const complete = !outcome.reason && unreliable.every(index => ocrByPage.get(index + 1)?.text.trim())
+      if (complete) {
+        const merged = Array.from({ length: classification.pageCount }, (_, index) => ({
+          text: good(byIndex.get(index)) ? byIndex.get(index)!.markdown : ocrByPage.get(index + 1)!.text,
+          page: index + 1,
+        }))
+        if (tooLong(merged.map(page => page.text))) throw new ServiceError(413, "The full document is too long to check. Split it into smaller documents.")
+        return { pages: merged, visual: true, pageCount: classification.pageCount, contentSource: "ocr", ocrPages: unreliable.length, ocrMs: outcome.ocrMs }
+      }
+      return { pages: [], visual: true, pageCount: classification.pageCount, contentSource: "gemini-visual", reason: outcome.reason || "scan_unreadable", ocrMs: outcome.ocrMs }
+    }
+    return { pages: [], visual: true, pageCount: classification.pageCount, contentSource: "gemini-visual", reason: "scan_unreadable" }
   } catch (error) {
     if (error instanceof ServiceError) throw error
     // Native extraction failure still permits the complete original PDF as visual input.
-    return { pages: [], visual: true, pageCount: null }
+    return { pages: [], visual: true, pageCount: null, contentSource: "gemini-visual", reason: "extraction_failed" }
   }
 }
 
@@ -81,7 +111,7 @@ export async function checkQaDocument(input: QaRequest, apiKey: string, model: s
     model,
     contents: { parts: [
       { text: JSON.stringify({ filename: input.document.name, requirements: input.requirements, pageCount: prepared.pageCount }) },
-      ...(prepared.visual
+      ...(prepared.visual && !prepared.pages.length
         ? [{ inlineData: { mimeType: "application/pdf", data: input.content } }]
         : [{ text: prepared.pages.map(p => `${p.page ? `[Page ${p.page}]\n` : ""}${p.text}`).join("\n\n") }]),
     ] },
@@ -103,20 +133,28 @@ export async function checkQaDocument(input: QaRequest, apiKey: string, model: s
     if (finding.keywords.length !== requirement.keywords.length || new Set(finding.keywords.map(k => k.keyword)).size !== requirement.keywords.length || finding.keywords.some(k => !requirement.keywords.includes(k.keyword))) {
       throw new ServiceError(502, "AI returned an incomplete keyword checklist. Retry this file.")
     }
-    return { ...finding, keywords: requirement.keywords.map(keyword => {
-      if (requirement.mode === "exact" && !prepared.visual) return exactQaKeyword(keyword, prepared.pages)
+    const hasText = prepared.pages.length > 0
+    const checked = (keyword: string): QaKeywordFinding => {
+      if (requirement.mode === "exact" && hasText) return exactQaKeyword(keyword, prepared.pages)
       const result = finding.keywords.find(k => k.keyword === keyword)!
-      if (prepared.visual) return { ...result, status: "uncertain" as const }
+      if (!hasText) return result
       if (result.status !== "found") return { ...result, evidence: "", page: null }
       const excerpt = normalizeQaText(result.evidence)
       const page = prepared.pages.find(p => excerpt && normalizeQaText(p.text).includes(excerpt) && (result.page === null || p.page === result.page))
       return page ? { ...result, page: page.page } : { keyword, status: "uncertain" as const, evidence: "", page: null }
+    }
+    // Scans (OCR or visual) keep their evidence but never become an automatic pass (Q3).
+    return { ...finding, keywords: requirement.keywords.map(keyword => {
+      const result = checked(keyword)
+      return prepared.visual ? { ...result, status: "uncertain" as const } : result
     }) }
   })
   return {
     documentId: input.document.id, name: input.document.name,
     coverage: !aiResult.completeCoverage || input.textComplete === false ? "incomplete" : prepared.visual ? "visual" : "full-text",
     findings,
+    ...(prepared.contentSource !== "native" ? { contentSource: prepared.contentSource } : {}),
+    ...(prepared.reason ? { reason: prepared.reason } : {}),
     ...(input.textComplete === false ? { error: "Word contains images, additional sections, or extraction warnings. Reattach a PDF to inspect the complete document." } : {}),
   }
 }

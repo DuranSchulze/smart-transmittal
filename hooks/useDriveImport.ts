@@ -2,7 +2,8 @@
 
 import { useCallback, useRef, useState } from "react"
 import type { TransmittalItem } from "../types"
-import { resolveDocumentNumberWithFallback } from "../services/geminiService"
+import { isGenericFileName, resolveDocumentNumberWithFallback } from "../services/geminiService"
+import { needsReview, reasonCopy, reasonFromClientError, reviewNote, type ImportFlow, type ParseReason, type ReadMethod } from "../lib/parse-reasons"
 import { parseDocument } from "../services/parse-api"
 import {
   extractFolderIdFromLink,
@@ -18,9 +19,17 @@ import type { DocumentReference, QaDocumentContent } from "../lib/transmittal-qa
 import { prepareQaContent } from "../services/qa-document-content"
 
 export type DriveFileMeta = { id: string; name: string; mimeType: string; resourceKey?: string }
-export type DriveImportResult = { addedCount: number; fallbackCount: number; failedCount?: number; failedFiles?: DriveFileMeta[]; skippedCount?: number; blockedImageCount?: number }
+export type DriveReviewFile = { name: string; note: string }
+export type DriveImportResult = { addedCount: number; fallbackCount: number; failedCount?: number; failedFiles?: DriveFileMeta[]; skippedCount?: number; blockedImageCount?: number; reviewFiles?: DriveReviewFile[] }
+const describeReview = (result: DriveImportResult) => result.reviewFiles?.length
+  ? ` Needs review: ${result.reviewFiles.map(file => `${file.name} (${file.note})`).join("; ")}.`
+  : result.fallbackCount ? ` ${result.fallbackCount} file(s) need review because extraction was incomplete.` : ""
 export const describeDriveImport = (result: DriveImportResult) =>
-  `Imported ${result.addedCount} item(s).${result.blockedImageCount ? ` ${result.blockedImageCount} image(s) were skipped because images are not supported.` : ""}${result.skippedCount ? ` ${result.skippedCount} file(s) already in this transmittal were skipped.` : ""}${result.fallbackCount ? ` ${result.fallbackCount} file(s) need review because extraction was incomplete.` : ""}${result.failedCount ? ` Could not import ${result.failedFiles?.map(file => file.name).join(", ") || `${result.failedCount} file(s)`}. Check the connection and sharing permissions, then retry.` : ""}`
+  `Imported ${result.addedCount} item(s).${result.blockedImageCount ? ` ${result.blockedImageCount} image(s) were skipped because images are not supported.` : ""}${result.skippedCount ? ` ${result.skippedCount} file(s) already in this transmittal were skipped.` : ""}${describeReview(result)}${result.failedCount ? ` Could not import ${result.failedFiles?.map(file => file.name).join(", ") || `${result.failedCount} file(s)`}. Check the connection and sharing permissions, then retry.` : ""}`
+
+/** Import entry point for diagnostics, derived from the caller's label. */
+const flowFor = (label: string): ImportFlow =>
+  /selection/i.test(label) ? "drive-selection" : /link/i.test(label) ? "drive-link" : "drive-folder"
 
 type UseDriveImportOptions = {
   apiBaseUrl: string
@@ -70,17 +79,24 @@ const driveDocument = (file: DriveFileMeta): DocumentReference => ({
   driveId: file.id, resourceKey: file.resourceKey, revision: crypto.randomUUID(),
 })
 
-const fallbackItem = (file: DriveFileMeta): TransmittalItem => ({
+/** A row built from the file name; `reason` explains why the document was not read. */
+const fallbackItem = (file: DriveFileMeta, reason?: ParseReason): TransmittalItem => ({
   document: driveDocument(file),
   id: file.id,
   qty: "1",
   noOfItems: "1",
-  documentNumber: fallbackNumber(file),
+  // Q4 default: generic names such as "scan.pdf" get no invented number.
+  documentNumber: isGenericFileName(file.name) ? "" : fallbackNumber(file),
   description: stripExtension(file.name),
-  remarks: IMPORT_REMARK,
+  remarks: reason ? reasonCopy(reason) : IMPORT_REMARK,
   fileType: "gdrive",
   fileSource: sourceUrl(file.id, file.resourceKey),
+  extraction: { readMethod: "none", ...(reason ? { reason } : {}) },
 })
+
+type Analysis = { items: TransmittalItem[]; fallback: boolean; review?: DriveReviewFile }
+const reviewFor = (file: DriveFileMeta, readMethod: ReadMethod, reason?: ParseReason): DriveReviewFile | undefined =>
+  needsReview(readMethod, reason) ? { name: file.name, note: reviewNote(readMethod, reason) || "file type not analyzed. Filled from the file name" } : undefined
 
 export function useDriveImport({
   apiBaseUrl,
@@ -109,9 +125,9 @@ export function useDriveImport({
   statusRef.current = onStatus
 
   const analyze = useCallback(
-    async (file: DriveFileMeta) => {
+    async (file: DriveFileMeta, flow: ImportFlow): Promise<Analysis> => {
       const session = getDocumentSession?.()
-      if (!analyzable(file)) return { items: [fallbackItem(file)], fallback: true }
+      if (!analyzable(file)) return { items: [fallbackItem(file)], fallback: true, review: reviewFor(file, "none") }
       const { base64, mimeType } = await getFileContentAsBase64(file.id, file.mimeType, file.resourceKey)
       const document = driveDocument(file)
       try {
@@ -125,44 +141,51 @@ export function useDriveImport({
             mimeType: prepared.mimeType,
             isText: prepared.isText,
             fileName: file.name,
+            flow,
           },
           apiBaseUrl,
         )
         if (getDocumentSession?.() !== session) return { items: [], fallback: false }
         if (!result.items.length) {
-          return { items: [{ ...fallbackItem(file), document }], fallback: true }
+          const reason = result.reason || "invalid_output"
+          return { items: [{ ...fallbackItem(file, reason), document }], fallback: true, review: reviewFor(file, "none", reason) }
         }
-        const forceRemark = Boolean(result.error) || (result.fallbackCount || 0) > 0
+        const fallback = Boolean(result.error) || (result.fallbackCount || 0) > 0
+        const readMethod: ReadMethod = result.readMethod || (result.parser === "fallback" ? "none" : "text")
+        const unreadable = readMethod === "none"
+        const extraction = { readMethod, ...(result.reason ? { reason: result.reason } : {}) }
         const items = result.items.map((item, index): TransmittalItem => ({
           id: `${file.id}-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
           qty: item.qty.trim() || "1",
           noOfItems: "1",
-          documentNumber:
-            resolveDocumentNumberWithFallback({
+          documentNumber: unreadable && isGenericFileName(file.name)
+            ? ""
+            : resolveDocumentNumberWithFallback({
               currentDocumentNumber: item.documentNumber,
               sourceName: file.name,
               description: item.description || stripExtension(file.name),
               documentType: item.documentType || "File",
             }) || fallbackNumber(file),
           description: item.description.trim() || stripExtension(file.name),
-          remarks: forceRemark
-            ? IMPORT_REMARK
-            : item.remarks.trim() || IMPORT_REMARK,
+          // REQ-3: never overwrite the failure or review reason with the generic import remark.
+          remarks: item.remarks.trim() || IMPORT_REMARK,
           fileType: "gdrive",
           document,
           fileSource: sourceUrl(file.id, file.resourceKey),
+          extraction,
         }))
-        return { items, fallback: forceRemark }
-      } catch {
+        return { items, fallback, review: reviewFor(file, readMethod, result.reason) }
+      } catch (error) {
         if (getDocumentSession?.() !== session) return { items: [], fallback: false }
-        return { items: [{ ...fallbackItem(file), document }], fallback: true }
+        const reason = reasonFromClientError(error)
+        return { items: [{ ...fallbackItem(file, reason), document }], fallback: true, review: reviewFor(file, "none", reason) }
       }
     },
     [apiBaseUrl, onDocumentReady, getDocumentSession],
   )
 
   const importFilesWithAi = useCallback(
-    async (files: DriveFileMeta[], label: string): Promise<DriveImportResult> => {
+    async (files: DriveFileMeta[], label: string, flow: ImportFlow = flowFor(label)): Promise<DriveImportResult> => {
       if (importBusyRef.current) throw new Error("An import is already running. Wait for it to finish.")
       importBusyRef.current = true
       const session = getDocumentSession?.()
@@ -170,6 +193,7 @@ export function useDriveImport({
       let fallbackCount = 0
       let failedCount = 0
       const failedFiles: DriveFileMeta[] = []
+      const reviewFiles: DriveReviewFile[] = []
       let firstError = ""
       const existingIds = new Set(existingItemsRef.current
         .filter(item => item.fileType === "gdrive" && item.fileSource)
@@ -190,11 +214,12 @@ export function useDriveImport({
             "info",
           )
           try {
-            const result = await analyze(file)
+            const result = await analyze(file, flow)
             items.push(...result.items)
             // Show each completed file while the rest of the batch is running.
             if (result.items.length) addItems(result.items)
             if (result.fallback) fallbackCount += 1
+            if (result.review && result.items.length) reviewFiles.push(result.review)
           } catch (error) {
             failedCount += 1
             failedFiles.push(file)
@@ -202,7 +227,7 @@ export function useDriveImport({
           }
         }
         if (!items.length && !skippedCount) throw new Error(firstError || (blockedImageCount ? "Image imports are not supported. Use PDF or Word documents." : "No importable files found. Subfolders are not imported as documents."))
-        return { addedCount: items.length, fallbackCount, failedCount, failedFiles, skippedCount, blockedImageCount }
+        return { addedCount: items.length, fallbackCount, failedCount, failedFiles, skippedCount, blockedImageCount, reviewFiles }
       } finally { importBusyRef.current = false }
     },
     [addItems, analyze, getDocumentSession],

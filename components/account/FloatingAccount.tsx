@@ -28,6 +28,8 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [hasCustomGeminiKey, setHasCustomGeminiKey] = useState(false);
+  // REQ-5: a stored key that cannot be decrypted is shown as unusable, not active.
+  const [personalKeyUnusable, setPersonalKeyUnusable] = useState(false);
   const [aiStatus, setAiStatus] = useState("");
   const [isLoadingAiSettings, setIsLoadingAiSettings] = useState(false);
   const [isSavingAiKey, setIsSavingAiKey] = useState(false);
@@ -88,6 +90,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to load AI settings.");
       }
       setHasCustomGeminiKey(Boolean(payload?.hasCustomGeminiKey));
+      setPersonalKeyUnusable(payload?.personalKeyStatus === "unusable");
       setSelectedModel(String(payload?.geminiModel || ""));
     } catch (error: any) {
       setAiStatus(error?.message || "Failed to load AI settings.");
@@ -160,6 +163,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to save AI key.");
       }
       setHasCustomGeminiKey(Boolean(payload?.hasCustomGeminiKey));
+      setPersonalKeyUnusable(payload?.personalKeyStatus === "unusable");
       setSelectedModel(String(payload?.geminiModel || ""));
       setGeminiApiKey("");
       setAiStatus(
@@ -187,6 +191,7 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
         throw new Error(payload?.error || "Failed to remove AI key.");
       }
       setHasCustomGeminiKey(false);
+      setPersonalKeyUnusable(false);
       setSelectedModel(String(payload?.geminiModel || ""));
       setGeminiApiKey("");
       setAiStatus("Personal Gemini API key removed. Using system key.");
@@ -370,10 +375,17 @@ export const FloatingAccount: React.FC<FloatingAccountProps> = ({
                   <span className="font-medium text-ink">
                     {isLoadingAiSettings
                       ? "Loading..."
-                      : hasCustomGeminiKey
-                        ? "Personal key"
-                        : "System key"}
+                      : personalKeyUnusable
+                        ? "System key"
+                        : hasCustomGeminiKey
+                          ? "Personal key"
+                          : "System key"}
                   </span>
+                  {!isLoadingAiSettings && personalKeyUnusable ? (
+                    <p role="alert" className="mt-1 text-xs font-medium text-red-800">
+                      Personal key unusable — re-enter it below.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">

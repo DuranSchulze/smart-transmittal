@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PanelHeader } from "./PanelHeader"
 import type { useTransmittalQa } from "@/hooks/useTransmittalQa"
-import type { QaRequirement, QaStatus } from "@/lib/transmittal-qa"
+import { qaCoverageLabel, type QaRequirement, type QaStatus } from "@/lib/transmittal-qa"
 
 type QaController = ReturnType<typeof useTransmittalQa>
 
@@ -395,12 +395,7 @@ export function QaPanel({ qa, isImporting }: { qa: QaController; isImporting: bo
                       . {finding.explanation}
                     </p>
                     <p className="mt-1 text-helper">
-                      Content:{" "}
-                      {document.coverage === "full-text"
-                        ? "Full document text checked"
-                        : document.coverage === "visual"
-                          ? "Visual reading — review evidence"
-                          : "Incomplete or unavailable"}
+                      Content: {qaCoverageLabel(document)}
                     </p>
                     {!finding.keywords.length && (
                       <p className="mt-2 text-helper">

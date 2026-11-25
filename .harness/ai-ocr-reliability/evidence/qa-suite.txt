@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 /Users/zafajardo/Documents/Development/DuranFilePino/smart-transmittal
+
+
+ Test Files  58 passed (58)
+      Tests  277 passed (277)
+   Start at  15:44:17
+   Duration  22.24s (transform 2.76s, setup 0ms, import 13.32s, tests 7.82s, environment 107.08s)
+

@@ -147,14 +147,32 @@ The browser owns the active editing state through `AppData`, but persistence and
 
 The parsing route now uses a local-first pipeline:
 
-1. For PDFs, `server/pdf-parsing.ts` asynchronously extracts cover-page Markdown with PDF Inspector. Scanned, sparse, broken-font, or failed extraction keeps the visual PDF input.
+1. For PDFs, `server/pdf-parsing.ts` classifies the PDF and extracts cover-page Markdown with PDF Inspector. When the cover is scanned, sparse, or broken-font, it runs local OCR (`server/ocr.ts`) on the cover plus flagged pages up to `OCR_PARSE_MAX_PAGES` (default 3). Usable OCR text takes the text path (`readMethod: "ocr"`). Otherwise the original PDF goes to Gemini visually with a reason (`ocr_unavailable`, `ocr_timeout`, `scan_unreadable`, or `extraction_failed`).
 2. `server/local-document-parser.ts` accepts only a descriptive labelled title and explicit numbered identifier. It returns one item and any explicitly labelled header fields without querying AI settings or invoking Gemini. Uncertain fields are left empty rather than invented.
 3. When local metadata is insufficient, Gemini interprets reliable extracted text. Scanned or unreliable PDF covers use Gemini's visual input. Word text is also treated as a single document; bulk text lists use a distinct multi-item prompt.
 4. Gemini output must contain a usable description, is normalized to string fields, and is restricted to one item for document imports. Header fields are whitelisted. Explicit identifier prefixes such as `INV-12345` are preserved.
-5. Missing keys, timeouts, empty or invalid AI output, and service errors produce clearly marked filename-based fallback items for document imports. Bulk text lists retain their line-based fallback.
-6. Responses identify the parser as `pdf-inspector`, `gemini-text`, `gemini-visual`, or `fallback` where available. Timings include authentication, native extraction, AI settings, and interpretation.
+5. Missing keys, timeouts, empty or invalid AI output, and service errors produce filename-based fallback items marked `readMethod: "none"`, each with exactly one `reason` from `lib/parse-reasons.ts`. Raw provider messages are never returned or logged. For unreadable rows with generic file names (`scan.pdf`, `IMG_0001.pdf`), the document number stays empty instead of being invented. Bulk text lists retain their line-based fallback.
+6. Responses identify the parser as `pdf-inspector`, `gemini-text`, `gemini-visual`, or `fallback`, plus `readMethod` (`text`, `ocr`, `visual`, `none`), an optional `reason`, and `keyClass` (`user`, `system`, `none`). When a stored personal key cannot be decrypted, the response carries `personalKeyStatus: "unusable"` and the system key is used. Timings include authentication, native extraction, AI settings, and interpretation.
+7. When a text PDF's cover has no strong identifier, pages 2–3 are read once natively. A labelled identifier found there replaces the weak number. Otherwise the result carries `document_number_unresolved`.
+8. A visual PDF over `GEMINI_INLINE_MAX_BYTES` decoded bytes (default 20 MB, below the 25 MB encoded request cap) or 1,000 pages is refused with `too_large` before any provider call.
 
-Gemini has a 60-second request timeout; the browser parsing request has a 90-second timeout. PDF Inspector is externalized as a native Next.js server dependency. Local extraction does not require OCR runtimes, and Gemini remains the visual reader for scans.
+Gemini's request timeout is 60 seconds, reduced by time already spent in the route (minimum 20 s), so the 90-second browser timeout is not exceeded. When it is, the client reports `provider_timeout` ("The document took too long to analyze"). The `document_parse_complete` log records `flow`, `readMethod`, `reason`, `keyClass`, page and OCR counts, and timings. It never records document text, file names, or keys. Import rows carry a session-only `extraction` marker, and the Files panel lists rows that need review. The marker is not persisted.
+
+### Local OCR runtime
+
+PDF Inspector's OCR (`processPdfWithOcr`, `Auto` mode, `offline: true`) needs PDFium, ONNX Runtime, and the PP-OCRv6 Small model set. `scripts/fetch-ocr-runtime.sh` downloads checksum-pinned builds into `vendor/ocr/` (gitignored), warms the models once, and keeps only the three model files as a read-only `modelDirectory`. `next.config.mjs` traces `vendor/ocr/**` into the parse and QA routes. The script runs from `vercel-build` and only does work when `OCR_BUNDLE_RUNTIME=true`. Locally, `npm run ocr:runtime` provisions linux-x64 or mac-arm64 (the latter is "preview" upstream).
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `OCR_BUNDLE_RUNTIME` | unset | `true` makes the build download and bundle the runtime (about 65 MB unzipped). |
+| `OCR_ENABLED` | unset (off) | `true` lets requests run OCR when the runtime is present. Otherwise the result is `ocr_unavailable` and the Gemini visual path runs. |
+| `OCR_PARSE_MAX_PAGES` / `OCR_QA_MAX_PAGES` | 3 / 10 | Page caps per request. |
+| `OCR_TIME_BUDGET_MS` | 45000 | Response budget for OCR. The native call cannot be cancelled. A late result still fills the cache. |
+| `OCR_RUNTIME_DIR` | `vendor/ocr` | Runtime location override. |
+
+OCR results are cached in-process by SHA-256 of the PDF bytes (32 documents, 64 MB of text, 30 minutes). Concurrent identical requests share one native call. The cache is per instance and is not shared across instances.
+
+**Rollout and recovery.** Ship with `OCR_ENABLED=false` first, so reason codes and review markers are live without OCR. Enable it on a preview after measuring function size and cold start, then on production. To disable, set `OCR_ENABLED=false` and redeploy the same build (Vercel applies env changes on redeploy). Requests then use Gemini visual reading with an `ocr_unavailable` reason.
 
 ## API Surface
 

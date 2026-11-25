@@ -7,6 +7,8 @@
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
     "build": "rm -rf .next-build && prisma generate && NEXT_DIST_DIR=.next-build next build",
+    "vercel-build": "sh scripts/fetch-ocr-runtime.sh && prisma generate && next build",
+    "ocr:runtime": "OCR_BUNDLE_RUNTIME=true sh scripts/fetch-ocr-runtime.sh",
     "test": "vitest run --environment jsdom",
     "start": "NEXT_DIST_DIR=.next-build next start",
     "db:sync": "prisma db push && prisma generate",

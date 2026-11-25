@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { auth } from "@/server/auth"
 import { QaRequestSchema, MAX_QA_CONTENT } from "@/lib/transmittal-qa"
 import { checkQaDocument } from "@/server/transmittal-qa"
-import { getDecryptedUserGeminiApiKey, getUserGeminiModel, getSystemDefaultGeminiModel } from "@/server/user-ai-settings"
+import { resolveUserGeminiKey, getUserGeminiModel, getSystemDefaultGeminiModel } from "@/server/user-ai-settings"
+import { keyClassFor } from "@/lib/parse-reasons"
 import { getSystemGeminiApiKey } from "@/services/geminiService"
 import { ServiceError } from "@/server/service-error"
 import { withRouteMetrics } from "@/server/observability"
@@ -37,9 +38,21 @@ async function postHandler(request: Request) {
     const parsed = QaRequestSchema.safeParse(body)
     if (!parsed.success) return NextResponse.json({ error: "Invalid QA document or checklist." }, { status: 400 })
     const [userKey, userModel] = await Promise.all([
-      getDecryptedUserGeminiApiKey(session.user.id), getUserGeminiModel(session.user.id),
+      resolveUserGeminiKey(session.user.id), getUserGeminiModel(session.user.id),
     ])
-    return NextResponse.json(await checkQaDocument(parsed.data, userKey || getSystemGeminiApiKey(), userModel || getSystemDefaultGeminiModel()), { headers: { "Cache-Control": "no-store" } })
+    const systemKey = getSystemGeminiApiKey()
+    const result = await checkQaDocument(parsed.data, userKey.apiKey || systemKey, userModel || getSystemDefaultGeminiModel())
+    // Outcome only: no document text, evidence, file names, or keys.
+    console.info(JSON.stringify({
+      event: "document_qa_complete",
+      flow: "qa",
+      coverage: result.coverage,
+      contentSource: result.contentSource || "native",
+      reason: result.reason,
+      keyClass: keyClassFor(userKey.apiKey, systemKey),
+      personalKeyStatus: userKey.personalKeyStatus,
+    }))
+    return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } })
   } catch (error) {
     // SDK errors can contain request payloads; never log them or return provider errors.
     return NextResponse.json({ error: error instanceof ServiceError ? error.message : "Could not check this document. Retry or check your AI settings." }, { status: error instanceof ServiceError ? error.status : 502 })
