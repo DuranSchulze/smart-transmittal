@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "skills": {
+    "harness-bug": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-bug/SKILL.md",
+      "computedHash": "7138a409549557cbe36de84b2526daaf6efd5f9cd6cf455603c213fbc9852b96"
+    },
+    "harness-execute": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-execute/SKILL.md",
+      "computedHash": "cbb8375885ac715979500c312d54e3c94fd15d3d3f2aef5e4a66f74689c2f089"
+    },
+    "harness-meditate": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-meditate/SKILL.md",
+      "computedHash": "83aafc4aee3b401ffb6685b6183e08f1c20a4f47e80941c7cfeee03f5f817f9d"
+    },
+    "harness-qa": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-qa/SKILL.md",
+      "computedHash": "d8f359e80ed748bdf20b025df081e8c56826b6d22e4788e0e93d24a7508c0eb2"
+    },
+    "harness-reflect": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-reflect/SKILL.md",
+      "computedHash": "5a024f0e5874b3f888e6605bbaf08123093789b05f209518228091e238b5e00d"
+    },
+    "harness-review": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-review/SKILL.md",
+      "computedHash": "42d059b3f822538a24003db8880dce8938c45e37bdd9127858271f3da8ae5835"
+    },
+    "harness-spec": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-spec/SKILL.md",
+      "computedHash": "807227bfd03a9245fb92aeb3d04f0648e7abf31bd10fa9de6cfba837eaac6ef2"
+    },
+    "harness-workflow": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/harness-workflow/SKILL.md",
+      "computedHash": "19150e906e8dafdff70593204d6a1db5de83d2513cdbb79febde473ef24e7911"
+    },
+    "web-research": {
+      "source": "zafajardo9/agentic-worflow-factory",
+      "sourceType": "github",
+      "skillPath": "skills/web-research/SKILL.md",
+      "computedHash": "4000d24a10beb58427d5b0a23b655068f410ee26b7fd762a368d0950a15453af"
+    }
+  }
+}
